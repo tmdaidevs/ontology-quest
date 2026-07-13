@@ -71,9 +71,9 @@ export const orgChartExample = {
     // Explicit facts, shown before reasoning.
     graph: {
       nodes: [
-        { id: 'ada', label: 'Ada', icon: '🧑‍💻', x: 90, y: 150, r: 22 },
-        { id: 'platform', label: 'Platform Team', icon: '🧩', x: 300, y: 60, r: 22 },
-        { id: 'engineering', label: 'Engineering', icon: '🏛️', x: 510, y: 150, r: 24, hub: true }
+        { id: 'ada', label: 'Ada', x: 95, y: 150, r: 22 },
+        { id: 'platform', label: 'Platform Team', x: 300, y: 58, r: 22 },
+        { id: 'engineering', label: 'Engineering', x: 505, y: 150, r: 24, hub: true }
       ],
       edges: [
         { from: 'ada', to: 'platform', label: 'worksIn' },

@@ -1,7 +1,7 @@
 // level6-live.js — Bonus level: explore a REAL, live public knowledge graph (Wikidata)
 // via its SPARQL endpoint. Reinforces every concept taught earlier (triples, RDF,
 // multi-hop traversal) using live data instead of a static demo.
-import { renderGraph, setHighlight } from '../graph-svg.js';
+import { renderGraph, radialLayout } from '../graph-svg.js';
 
 const WD_SEARCH_URL = 'https://www.wikidata.org/w/api.php';
 const WD_SPARQL_URL = 'https://query.wikidata.org/sparql';
@@ -170,31 +170,33 @@ export function mount(container, api) {
   // --- shared graph/rel-list renderers used by BOTH Free Explore and the Challenge ---
   // `visited`, when provided, marks already-visited entities as non-clickable (Challenge mode's no-repeat rule).
   function renderGraphInto(targetEl, centerLabel, rels, onHop, visited) {
-    const width = 700, height = 380;
-    const cx = width / 2, cy = height / 2;
-    const radius = Math.min(width, height) / 2 - 70;
-    const nodes = [{ id: 'center', label: centerLabel, x: cx, y: cy, r: 30, icon: '🎯' }];
-    const edges = [];
+    // Node ids must be unique per RELATION, not per target entity: Wikidata sometimes
+    // returns two different properties pointing at the same object (e.g. Tokyo's
+    // "country" and "located in the administrative territorial entity" both -> Japan).
+    // Keying nodes by valueQid alone would silently collapse those into one node id,
+    // and renderGraph's edge lookup (which finds the FIRST node with a matching id)
+    // would then draw both edges on top of each other.
+    const graphNodeId = (rel, i) => `${rel.valueQid}#${i}`;
+    const graph = radialLayout(
+      { id: 'center', label: centerLabel, r: 30 },
+      rels.map((rel, i) => ({ id: graphNodeId(rel, i), label: rel.valueLabel, rel: rel.propLabel })),
+      { spokeR: 20, maxLabelChars: 18 }
+    );
+    const handles = renderGraph(targetEl, graph, { width: graph.size, height: graph.size });
     rels.forEach((rel, i) => {
-      const angle = (i / Math.max(rels.length, 1)) * Math.PI * 2 - Math.PI / 2;
-      const x = cx + radius * Math.cos(angle);
-      const y = cy + radius * Math.sin(angle);
-      nodes.push({ id: rel.valueQid, label: rel.valueLabel, x, y, r: 22, icon: '●' });
-      edges.push({ from: 'center', to: rel.valueQid, label: rel.propLabel });
-    });
-    const handles = renderGraph(targetEl, { nodes, edges }, { width, height });
-    rels.forEach(rel => {
-      const g = handles.nodeEls[rel.valueQid];
+      const g = handles.nodeEls[graphNodeId(rel, i)];
       if (!g) return;
       if (visited && visited.has(rel.valueQid)) {
         g.classList.add('visited');
       } else {
-        g.style.cursor = 'pointer';
+        g.classList.add('clickable');
         g.addEventListener('click', () => onHop(rel.valueQid, rel.valueLabel));
       }
     });
-    // Highlight the whole neighborhood briefly so the "live" traversal reads clearly.
-    setHighlight(handles, { nodes: nodes.map(n => n.id), edges: edges.map((_, i) => i), dimOthers: false });
+    // Give the center node a calm, static emphasis (no permanent pulsing on every
+    // spoke — that reads as busy/noisy with up to 10 of them on screen at once).
+    const centerG = handles.nodeEls.center;
+    if (centerG) centerG.classList.add('highlight');
   }
 
   function renderRelListInto(targetEl, rels, onHop, visited) {

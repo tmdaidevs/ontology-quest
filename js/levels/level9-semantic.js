@@ -127,7 +127,7 @@ export function mount(container, api) {
   // ================= Ontology graph + reasoner =================
   const ontoGraphEl = container.querySelector('#sem-onto-graph');
   const baseGraph = orgChartExample.ontology.graph;
-  renderGraph(ontoGraphEl, baseGraph, { width: 480, height: 200 });
+  renderGraph(ontoGraphEl, baseGraph, { width: 600, height: 220 });
 
   const reasonerBtn = container.querySelector('#btn-run-reasoner');
   const reasonerStatus = container.querySelector('#reasoner-status');
@@ -139,7 +139,7 @@ export function mount(container, api) {
       nodes: baseGraph.nodes,
       edges: [...baseGraph.edges, orgChartExample.ontology.inferredEdge]
     };
-    const handles = renderGraph(ontoGraphEl, extendedGraph, { width: 480, height: 200 });
+    const handles = renderGraph(ontoGraphEl, extendedGraph, { width: 600, height: 220 });
     const inferredIdx = extendedGraph.edges.length - 1;
     const inferredG = handles.edgeEls[inferredIdx];
     if (inferredG) inferredG.classList.add('inferred', 'anim-pop');
