@@ -18,10 +18,12 @@ export function animateCount(el, to, opts = {}) {
   requestAnimationFrame(tick);
 }
 
-/** Animate every element matching `.count-target` inside `container`, using its data-target attribute. */
+/** Animate every element matching `.count-target` inside `container`, using its data-target attribute.
+ *  Each element may set its own `data-suffix` (e.g. "B+", "M+") which overrides `opts.suffix`. */
 export function animateCountTargets(container, opts = {}) {
   container.querySelectorAll('.count-target').forEach(el => {
     const to = Number(el.dataset.target || 0);
-    animateCount(el, to, opts);
+    const suffix = el.dataset.suffix !== undefined ? el.dataset.suffix : (opts.suffix || '');
+    animateCount(el, to, { ...opts, suffix });
   });
 }

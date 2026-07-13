@@ -1,6 +1,6 @@
 # 🕸️ Ontology Quest
 
-**Ontology Quest** is a free, single-page, browser-based educational game that teaches **ontologies**, **knowledge graphs**, and the standards/technologies (RDF, OWL, SPARQL, GraphRAG, and more) behind them — through five short, interactive levels, plus two bonus levels: one that queries a **real, live public knowledge graph**, and one that animates the **algorithms** powering multi-hop reasoning.
+**Ontology Quest** is a free, single-page, browser-based educational game that teaches **ontologies**, **knowledge graphs**, and the standards/technologies (RDF, OWL, SPARQL, GraphRAG, and more) behind them — through five short, interactive levels, plus three bonus levels: one that queries a **real, live public knowledge graph**, one that animates the **algorithms** powering multi-hop reasoning, and one that tours **real enterprise knowledge graphs** at scale.
 
 No backend, no build step, no login. Everything runs as static HTML/CSS/JS and your progress is saved locally in your browser (`localStorage`).
 
@@ -21,6 +21,7 @@ Ontologies are formal, explicit specifications of the concepts, relationships, a
 | 5 | 🏗️ **Build Your Own Ontology** | Design your own ontology in a sandbox node-link editor — add classes, instances, and labeled relationships on an interactive canvas. Pick from 3 starter scenarios (Org Chart, Movie Recommendation System, Customer Support KB) or start fully custom, then validate against ontology best practices (has classes, has relationships, has a hierarchy, no orphan nodes, has instances) for a score. |
 | ✨ | 🌐 **Bonus: Live Knowledge Graph Explorer** | Always unlocked. Query **[Wikidata](https://www.wikidata.org)** — a real public knowledge graph of 100M+ entities — live, straight from your browser via its actual SPARQL endpoint. Search any person, place, or concept (or use a quick-start chip), then click any related entity to hop across real RDF relationships, exactly like the simulated multi-hop traversal in Level 4. View the live SPARQL query behind every hop. |
 | ✨ | **Bonus: Algorithms Visualized** | Always unlocked. Watch the actual algorithms behind graph reasoning run step-by-step: toggle between **BFS** (queue) and **DFS** (stack) and step or auto-play a traversal across the same class hierarchy to see how visit order differs; run a live **embedding similarity search** that finds "Wolf"'s nearest neighbors by vector distance alone (no explicit graph edge required) with an animated radiating search circle; then walk through the full **5-stage hybrid GraphRAG pipeline** (question → vector search → graph traversal → assembled context → LLM answer) that ties both techniques together. |
+| ✨ | 🏢 **Bonus: Enterprise Case Studies** | Always unlocked. See ontologies at production scale: a log-scale bar chart comparing entity/fact counts across real deployments, then six expandable case studies — Google Knowledge Graph, Amazon's Product Graph, LinkedIn's Economic Graph, SNOMED CT (healthcare), Microsoft Graph, and Palantir's Foundry Ontology — each with verified stats, a narrative, an "ontology snapshot" mini-diagram of how it's actually modeled, and its tech stack. Finish with a 6-question quiz to earn the Enterprise Analyst badge. |
 
 Every level's quiz includes an optional **hint button** (small score penalty) if you get stuck, and a **"Next Level →" button** appears the moment you finish, so you can keep moving without returning to the map.
 
@@ -37,17 +38,17 @@ Progress, best scores, and badges are tracked per level and persisted in `localS
 ## Project structure
 
 ```
-index.html                # Single-page app shell (landing, level map, 7 level/bonus screens)
+index.html                # Single-page app shell (landing, level map, 8 level/bonus screens)
 css/style.css             # Dark theme, animations, responsive layout
 js/
   main.js                  # Navigation, level map rendering, level mounting, next-level flow
   progress.js              # localStorage-backed progress/score/badge tracking
-  graph-svg.js             # Small reusable SVG node-link rendering helper
+  graph-svg.js             # Small reusable SVG node-link rendering helper (+ hub-spoke layout)
   graph-algorithms.js      # Pure BFS/DFS traversal step generators (Level 7)
   vector-space-svg.js      # SVG embedding scatter-plot + nearest-neighbor + search-circle animation (Level 7)
   ui-utils.js              # Shared animated count-up helper for scores
-  data/                    # Content data per level (timeline, concepts, tools, graphs, scenarios, algo-graph.js)
-  levels/                  # One module per level (level1-history.js … level5-sandbox.js, level6-live.js, level7-algorithms.js bonus levels)
+  data/                    # Content data per level (timeline, concepts, tools, graphs, scenarios, algo-graph.js, case-studies.js)
+  levels/                  # One module per level (level1-history.js … level5-sandbox.js, level6-live.js, level7-algorithms.js, level8-enterprise.js bonus levels)
 .github/workflows/deploy.yml  # GitHub Pages deployment workflow
 ```
 

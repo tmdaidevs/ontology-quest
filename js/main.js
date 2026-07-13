@@ -12,7 +12,8 @@ const levelMeta = [
   { num: 4, id: 'level-4', title: 'Multi-Hop Reasoning', desc: 'How graphs are queried, traversed & reasoned over.' },
   { num: 5, id: 'level-5', title: 'Build Your Own Ontology', desc: 'Design a knowledge graph in a sandbox.' },
   { num: 6, id: 'level-6', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true },
-  { num: 7, id: 'level-7', title: 'Algorithms Visualized', desc: 'Watch BFS, DFS, embedding search & GraphRAG animated step-by-step.', bonus: true }
+  { num: 7, id: 'level-7', title: 'Algorithms Visualized', desc: 'Watch BFS, DFS, embedding search & GraphRAG animated step-by-step.', bonus: true },
+  { num: 8, id: 'level-8', title: 'Enterprise Case Studies', desc: 'How Google, Amazon, LinkedIn, healthcare, Microsoft & Palantir use knowledge graphs at scale.', bonus: true }
 ];
 
 // Lazily import level modules only when needed to keep initial load light.
@@ -23,14 +24,15 @@ const levelLoaders = {
   4: () => import('./levels/level4-technical.js'),
   5: () => import('./levels/level5-sandbox.js'),
   6: () => import('./levels/level6-live.js'),
-  7: () => import('./levels/level7-algorithms.js')
+  7: () => import('./levels/level7-algorithms.js'),
+  8: () => import('./levels/level8-enterprise.js')
 };
 
 const screens = {
   landing: document.getElementById('screen-landing'),
   map: document.getElementById('screen-map')
 };
-for (let i = 1; i <= 7; i++) {
+for (let i = 1; i <= 8; i++) {
   screens[`level-${i}`] = document.getElementById(`screen-level-${i}`);
 }
 
