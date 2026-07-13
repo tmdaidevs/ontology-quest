@@ -58,7 +58,7 @@ export function mount(container, api) {
       qDiv.innerHTML = `
         <div class="qtext-row">
           <p class="qtext">${qi + 1}. ${q.q}</p>
-          ${q.hint ? `<button class="hint-btn" id="hint-btn-${qi}">💡 Hint</button>` : ''}
+          ${q.hint ? `<button class="hint-btn" id="hint-btn-${qi}">Hint</button>` : ''}
         </div>
         <div class="hint-box" id="hint-box-${qi}" hidden></div>
         <div class="quiz-options"></div>
@@ -90,7 +90,7 @@ export function mount(container, api) {
         const hintBox = qDiv.querySelector(`#hint-box-${qi}`);
         hintBtn.addEventListener('click', () => {
           hintBox.hidden = false;
-          hintBox.textContent = `💡 ${q.hint}`;
+          hintBox.textContent = `${q.hint}`;
           hintBtn.disabled = true;
           hintsUsed.add(qi);
         });
@@ -105,11 +105,11 @@ export function mount(container, api) {
         const score = Math.max(0, rawScore - penalty);
         let badge = null;
         if (score === 100) {
-          const added = api.badge('history-scholar', 'History Scholar', '📜');
-          if (added) badge = { name: 'History Scholar', icon: '📜' };
+          const added = api.badge('history-scholar', 'History Scholar', '');
+          if (added) badge = { name: 'History Scholar', icon: '' };
         }
         api.complete(score, {
-          heading: (correctCount === historyQuiz.length && hintsUsed.size === 0) ? '🎉 Perfect run!' : '✅ Quiz complete',
+          heading: (correctCount === historyQuiz.length && hintsUsed.size === 0) ? 'Perfect run!' : 'Quiz complete',
           detail: `${correctCount}/${historyQuiz.length} correct${hintsUsed.size ? ` · ${hintsUsed.size} hint${hintsUsed.size === 1 ? '' : 's'} used` : ''} — you've traced ontologies from Aristotle to GraphRAG.`,
           badge
         });

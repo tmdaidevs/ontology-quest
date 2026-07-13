@@ -20,35 +20,35 @@ export const spectrumStages = [
   },
   {
     id: 'vocab',
-    icon: '📖',
+    icon: '≡',
     label: 'Controlled Vocabulary',
     short: 'A fixed, agreed list of terms with definitions.',
     detail: 'A closed, curated list of approved terms — e.g. a company\'s official product names, or a style guide\'s preferred spellings. This removes wording ambiguity, but the terms still just sit in a flat list with no relationships between them.'
   },
   {
     id: 'taxonomy',
-    icon: '🌳',
+    icon: '▲',
     label: 'Taxonomy',
     short: 'A strict "is-a" hierarchy — one parent per node.',
     detail: 'Terms are arranged into a tree using broader/narrower ("is-a") relationships — think biological classification, a product-category tree, or a file-folder structure. Simple and easy to browse, but each node typically has exactly one parent and there is no logic beyond "this is a kind of that."'
   },
   {
     id: 'thesaurus',
-    icon: '🔗',
+    icon: '⇌',
     label: 'Thesaurus',
     short: 'Adds synonyms & "related term" links.',
     detail: 'Standardized by ISO 25964 and modeled on the Web with SKOS, a thesaurus keeps the taxonomy\'s hierarchy but adds associative relationships: synonyms ("use / used for"), broader/narrower terms, and "related term" links. Library of Congress Subject Headings and MeSH (medical subject headings) are classic examples — richer than a taxonomy, but still no formal logic.'
   },
   {
     id: 'bi-model',
-    icon: '📊',
+    icon: '▦',
     label: 'BI-Style Semantic Model',
     short: 'Tables, relationships, hierarchies & measures for analytics.',
     detail: 'This is what most people in data & analytics mean when they say "semantic model" today — a Power BI / Analysis Services semantic model, a dbt or Looker (LookML) semantic layer, or a classic entity-relationship diagram. It maps raw tables to business-friendly entities, joins them with relationships, and defines calculated measures (e.g. DAX). It is genuinely semantic — it gives data business meaning — but that meaning lives in relationships and formulas a person wrote down, not in machine-checkable logic.'
   },
   {
     id: 'ontology',
-    icon: '🧠',
+    icon: '∴',
     label: 'Formal Ontology',
     short: 'Classes, properties & logical axioms a machine can reason over.',
     detail: 'Built with W3C standards like RDFS and OWL, a formal ontology defines classes, properties, and logical axioms — equivalence, disjointness, cardinality, transitivity, property chains. A reasoner can process those axioms to check consistency and infer brand-new facts that were never explicitly stated. Gene Ontology and SNOMED CT are real-world examples used for exactly this kind of automated inference.'

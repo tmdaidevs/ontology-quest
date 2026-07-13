@@ -25,11 +25,11 @@ export function mount(container, api) {
       <h3>2 · Design Your Ontology</h3>
       <p>Build classes, instances, and relationships. <strong>Add Class / Add Instance</strong>: click empty canvas to place a node. <strong>Connect</strong>: click a source node, then a target node, then name the relationship. <strong>Move</strong>: drag nodes around.</p>
       <div class="sandbox-toolbar">
-        <button class="btn btn-secondary mode-btn" data-mode="move">🖐 Move</button>
-        <button class="btn btn-secondary mode-btn" data-mode="add-class">➕ Add Class</button>
-        <button class="btn btn-secondary mode-btn" data-mode="add-instance">⚫ Add Instance</button>
-        <button class="btn btn-secondary mode-btn" data-mode="connect">🔗 Connect</button>
-        <button class="btn btn-ghost" id="btn-delete-selected">🗑 Delete Selected</button>
+        <button class="btn btn-secondary mode-btn" data-mode="move">Move</button>
+        <button class="btn btn-secondary mode-btn" data-mode="add-class">Add Class</button>
+        <button class="btn btn-secondary mode-btn" data-mode="add-instance">Add Instance</button>
+        <button class="btn btn-secondary mode-btn" data-mode="connect">Connect</button>
+        <button class="btn btn-ghost" id="btn-delete-selected">Delete Selected</button>
         <button class="btn btn-ghost" id="btn-clear">↺ Clear All</button>
       </div>
       <div class="sandbox-canvas-wrap">
@@ -37,7 +37,7 @@ export function mount(container, api) {
       </div>
       <p class="sandbox-hint" id="sandbox-hint">Mode: Move — click and drag nodes to reposition them.</p>
       <div style="margin-top:14px;">
-        <button class="btn btn-primary" id="btn-validate-ontology">✅ Validate My Ontology</button>
+        <button class="btn btn-primary" id="btn-validate-ontology">Validate My Ontology</button>
       </div>
     </div>
   `;
@@ -266,13 +266,13 @@ export function mount(container, api) {
 
     let badge = null;
     if (passCount === checks.length) {
-      const added = api.badge('ontology-architect', 'Ontology Architect', '🏗️');
-      if (added) badge = { name: 'Ontology Architect', icon: '🏗️' };
+      const added = api.badge('ontology-architect', 'Ontology Architect', '');
+      if (added) badge = { name: 'Ontology Architect', icon: '' };
     }
     validatedOnce = true;
     if (currentScenario) saveSandbox(currentScenario.id, { nodes, edges });
     api.complete(score, {
-      heading: passCount === checks.length ? '🏆 Excellent ontology!' : '✅ Level complete',
+      heading: passCount === checks.length ? 'Excellent ontology!' : 'Level complete',
       detail: `Scenario: ${currentScenario.name} · ${passCount}/${checks.length} best practices met.`,
       badge,
       checklist: checks

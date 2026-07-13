@@ -131,7 +131,7 @@ export function mount(container, api) {
       qDiv.innerHTML = `
         <div class="qtext-row">
           <p class="qtext">${qi + 1}. ${q.q}</p>
-          <button class="hint-btn" id="cs-hint-btn-${qi}">💡 Hint</button>
+          <button class="hint-btn" id="cs-hint-btn-${qi}">Hint</button>
         </div>
         <div class="hint-box" id="cs-hint-box-${qi}" hidden></div>
         <div class="quiz-options"></div>
@@ -160,7 +160,7 @@ export function mount(container, api) {
       const hintBox = qDiv.querySelector(`#cs-hint-box-${qi}`);
       hintBtn.addEventListener('click', () => {
         hintBox.hidden = false;
-        hintBox.textContent = `💡 ${q.hint}`;
+        hintBox.textContent = `${q.hint}`;
         hintBtn.disabled = true;
         hintsUsed.add(qi);
       });
@@ -174,11 +174,11 @@ export function mount(container, api) {
         const score = Math.max(0, rawScore - penalty);
         let badge = null;
         if (score === 100) {
-          const added = api.badge('enterprise-analyst', 'Enterprise Analyst', '🏢');
-          if (added) badge = { name: 'Enterprise Analyst', icon: '🏢' };
+          const added = api.badge('enterprise-analyst', 'Enterprise Analyst', '');
+          if (added) badge = { name: 'Enterprise Analyst', icon: '' };
         }
         api.complete(score, {
-          heading: (correctCount === caseStudyQuiz.length && hintsUsed.size === 0) ? '🎉 Perfect run!' : '✅ Quiz complete',
+          heading: (correctCount === caseStudyQuiz.length && hintsUsed.size === 0) ? 'Perfect run!' : 'Quiz complete',
           detail: `${correctCount}/${caseStudyQuiz.length} correct${hintsUsed.size ? ` · ${hintsUsed.size} hint${hintsUsed.size === 1 ? '' : 's'} used` : ''} — you've toured six production knowledge graphs, from Google's knowledge panels to Palantir's Ontology.`,
           badge,
           recap: caseStudies.map(cs => ({ title: cs.name, body: cs.tagline }))

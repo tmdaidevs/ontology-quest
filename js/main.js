@@ -75,7 +75,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 // --- sound mute toggle (always visible in the topbar, independent of level progress) ---
 const muteBtn = document.getElementById('btn-mute');
 function updateMuteBtn() {
-  muteBtn.textContent = isMuted() ? '🔇' : '🔊';
+  muteBtn.textContent = isMuted() ? 'Sound: Off' : 'Sound: On';
   muteBtn.setAttribute('aria-pressed', String(isMuted()));
   muteBtn.title = isMuted() ? 'Unmute sound effects' : 'Mute sound effects';
 }
@@ -151,8 +151,8 @@ function renderAchievementsRow() {
   if (!row) return;
   const unlocked = coreLevelsComplete();
   row.innerHTML = `
-    <button class="btn btn-ghost" id="btn-share-card">🖼️ Share Score Card</button>
-    <button class="btn ${unlocked ? 'btn-primary' : 'btn-ghost'}" id="btn-certificate" ${unlocked ? '' : 'disabled'} title="${unlocked ? 'Download your certificate' : 'Complete all 5 core levels to unlock'}">🎓 ${unlocked ? 'Get Your Certificate' : 'Certificate (locked)'}</button>
+    <button class="btn btn-ghost" id="btn-share-card">Share Score Card</button>
+    <button class="btn ${unlocked ? 'btn-primary' : 'btn-ghost'}" id="btn-certificate" ${unlocked ? '' : 'disabled'} title="${unlocked ? 'Download your certificate' : 'Complete all 5 core levels to unlock'}">${unlocked ? 'Get Your Certificate' : 'Certificate (locked)'}</button>
   `;
   row.querySelector('#btn-share-card').addEventListener('click', () => downloadShareCard());
   if (unlocked) row.querySelector('#btn-certificate').addEventListener('click', () => openCertificateModal());
@@ -206,10 +206,10 @@ function attachLevelDelegation(body, num) {
 function computeMetaBadges({ score, elapsedMs, hintsUsed }) {
   const earned = [];
   const tryAward = (id, name, icon) => { if (progress.addBadge(id, name, icon)) earned.push({ name, icon }); };
-  if (hintsUsed === 0 && score >= 90) tryAward('sharp-mind', 'Sharp Mind', '💡');
-  if (elapsedMs !== null && elapsedMs < 60000 && score >= 70) tryAward('speedrunner', 'Speedrunner', '⚡');
-  if (CORE_LEVEL_NUMS.every(n => progress.getScore(n) === 100)) tryAward('perfectionist', 'Perfectionist', '💎');
-  if (ALL_LEVEL_NUMS.every(n => progress.isCompleted(n))) tryAward('completionist', 'Completionist', '🏆');
+  if (hintsUsed === 0 && score >= 90) tryAward('sharp-mind', 'Sharp Mind', '');
+  if (elapsedMs !== null && elapsedMs < 60000 && score >= 70) tryAward('speedrunner', 'Speedrunner', '');
+  if (CORE_LEVEL_NUMS.every(n => progress.getScore(n) === 100)) tryAward('perfectionist', 'Perfectionist', '');
+  if (ALL_LEVEL_NUMS.every(n => progress.isCompleted(n))) tryAward('completionist', 'Completionist', '');
   return earned;
 }
 
@@ -223,14 +223,14 @@ function buildApi(num) {
       sfx.levelComplete();
       burstConfetti({ gold: score >= 90 });
       const metaBadges = computeMetaBadges({ score, elapsedMs, hintsUsed });
-      metaBadges.forEach(b => showToast(`🏅 Badge earned: ${b.name}`));
+      metaBadges.forEach(b => showToast(`Badge earned: ${b.name}`));
       updateTopbar();
       showToast(`Level ${num} complete! Score: ${Math.round(score)}/100`);
       showResults(num, score, meta || {}, metaBadges);
     },
     badge: (id, name, icon) => {
       const added = progress.addBadge(id, name, icon);
-      if (added) { showToast(`🏅 Badge earned: ${name}`); sfx.badge(); }
+      if (added) { showToast(`Badge earned: ${name}`); sfx.badge(); }
       updateTopbar();
       return added;
     }
@@ -297,7 +297,7 @@ function showResults(num, score, meta, extraBadges) {
 
   const allBadges = [...(meta.badge ? [meta.badge] : []), ...(extraBadges || [])];
   const badgeHtml = allBadges.length
-    ? `<div class="results-badge-row">${allBadges.map(b => `<span class="badge-chip badge-pop">${b.icon} ${b.name} earned!</span>`).join('')}</div>`
+    ? `<div class="results-badge-row">${allBadges.map(b => `<span class="badge-chip badge-pop">${b.name} earned!</span>`).join('')}</div>`
     : '';
 
   const recapHtml = (meta.recap && meta.recap.length)
@@ -305,7 +305,7 @@ function showResults(num, score, meta, extraBadges) {
     : '';
 
   const checklistHtml = (meta.checklist && meta.checklist.length)
-    ? `<ul class="results-checklist">${meta.checklist.map(c => `<li class="${c.pass ? 'pass' : 'fail'}"><span class="cl-icon">${c.pass ? '✅' : '❌'}</span><span>${c.label}</span></li>`).join('')}</ul>`
+    ? `<ul class="results-checklist">${meta.checklist.map(c => `<li class="${c.pass ? 'pass' : 'fail'}"><span>${c.label}</span></li>`).join('')}</ul>`
     : '';
 
   // Next-step button(s): a core level offers the next core level; finishing the
@@ -339,7 +339,7 @@ function showResults(num, score, meta, extraBadges) {
       <div class="results-actions">
         <button class="btn btn-ghost" id="btn-replay">↺ Replay Level</button>
         ${nextButtonsHtml}
-        <button class="btn btn-ghost" id="btn-goto-map">🗺️ Level Map</button>
+        <button class="btn btn-ghost" id="btn-goto-map">Level Map</button>
       </div>
     </div>
   `;

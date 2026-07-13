@@ -133,7 +133,7 @@ function generate() {
     let bx = 64;
     let by = rowY;
     badges.slice(0, 10).forEach(b => {
-      const label = `${b.icon} ${b.name}`;
+      const label = b.name;
       const w = ctx.measureText(label).width + 30;
       if (bx + w > W - 64) { bx = 64; by += rowH + 10; }
       ctx.fillStyle = 'rgba(46,230,200,0.08)';

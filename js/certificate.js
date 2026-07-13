@@ -168,7 +168,7 @@ function generateCanvas(name) {
   const badges = progress.getBadges();
   if (badges.length) {
     ctx.font = '18px "IBM Plex Sans", sans-serif';
-    const labels = badges.slice(0, 8).map(b => `${b.icon} ${b.name}`);
+    const labels = badges.slice(0, 8).map(b => b.name);
     const widths = labels.map(l => ctx.measureText(l).width + 28);
     const totalW = widths.reduce((a, b) => a + b, 0) + (labels.length - 1) * 10;
     let bx = cx - totalW / 2;
@@ -223,7 +223,7 @@ export function openCertificateModal() {
   overlay.innerHTML = `
     <div class="cert-modal">
       <button class="cert-modal-close" id="cert-modal-close" aria-label="Close">✕</button>
-      <h3>🎓 Your Certificate of Completion</h3>
+      <h3>Your Certificate of Completion</h3>
       <p class="cert-modal-sub">Type the name to print on your certificate, preview it live, then download it as a PNG.</p>
       <div class="cert-name-row">
         <input type="text" id="cert-name-input" maxlength="60" placeholder="Your name" value="${escapeHtml(savedName)}" />
@@ -231,9 +231,9 @@ export function openCertificateModal() {
       <div class="cert-preview-wrap">
         <canvas id="cert-preview-canvas" class="cert-preview-canvas"></canvas>
       </div>
-      <p class="cert-linkedin-tip">💡 <strong>Add it to LinkedIn:</strong> go to Profile → <em>Add profile section</em> → <em>Licenses &amp; certifications</em>, name it "Ontology Quest — Certificate of Completion", and upload this PNG as the media attachment.</p>
+      <p class="cert-linkedin-tip"><strong>Add it to LinkedIn:</strong> go to Profile → <em>Add profile section</em> → <em>Licenses &amp; certifications</em>, name it "Ontology Quest — Certificate of Completion", and upload this PNG as the media attachment.</p>
       <div class="cert-modal-actions">
-        <button class="btn btn-primary" id="cert-download-btn">⬇ Download PNG</button>
+        <button class="btn btn-primary" id="cert-download-btn">Download PNG</button>
         <button class="btn btn-ghost" id="cert-modal-close-2">Close</button>
       </div>
     </div>

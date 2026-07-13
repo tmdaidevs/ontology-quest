@@ -3,14 +3,14 @@
 
 export const orgGraph = {
   nodes: [
-    { id: 'you', label: 'You', x: 90, y: 300, icon: '🧑' },
-    { id: 'mgr', label: 'Your Manager (Alice)', x: 260, y: 190, icon: '👩‍💼' },
-    { id: 'mgr2', label: "Alice's Manager (Bob)", x: 460, y: 90, icon: '🧔' },
-    { id: 'peer1', label: 'Peer: Sam', x: 260, y: 320, icon: '🧑‍💻' },
-    { id: 'peer2', label: 'Peer: Rae', x: 90, y: 130, icon: '🧑‍🎨' },
-    { id: 'colleague1', label: 'Colleague: Dee', x: 620, y: 190, icon: '🧑‍🔬' },
-    { id: 'colleague2', label: 'Colleague: Wes', x: 620, y: 320, icon: '🧑‍🚀' },
-    { id: 'colleague3', label: 'Colleague: Nia', x: 460, y: 320, icon: '🧑‍🏫' }
+    { id: 'you', label: 'You', x: 90, y: 300 },
+    { id: 'mgr', label: 'Your Manager (Alice)', x: 260, y: 190 },
+    { id: 'mgr2', label: "Alice's Manager (Bob)", x: 460, y: 90 },
+    { id: 'peer1', label: 'Peer: Sam', x: 260, y: 320 },
+    { id: 'peer2', label: 'Peer: Rae', x: 90, y: 130 },
+    { id: 'colleague1', label: 'Colleague: Dee', x: 620, y: 190 },
+    { id: 'colleague2', label: 'Colleague: Wes', x: 620, y: 320 },
+    { id: 'colleague3', label: 'Colleague: Nia', x: 460, y: 320 }
   ],
   edges: [
     { from: 'you', to: 'mgr', label: 'reportsTo' },

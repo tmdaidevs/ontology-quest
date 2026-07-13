@@ -88,11 +88,11 @@ export function mount(container, api) {
     const score = Math.max(20, 100 - mistakes * 8);
     let badge = null;
     if (mistakes === 0) {
-      const added = api.badge('perfect-matcher', 'Perfect Matcher', '🎯');
-      if (added) badge = { name: 'Perfect Matcher', icon: '🎯' };
+      const added = api.badge('perfect-matcher', 'Perfect Matcher', '');
+      if (added) badge = { name: 'Perfect Matcher', icon: '' };
     }
     api.complete(score, {
-      heading: mistakes === 0 ? '🏆 Flawless match!' : '✅ Level complete',
+      heading: mistakes === 0 ? 'Flawless match!' : 'Level complete',
       detail: `${mistakes} mistake${mistakes === 1 ? '' : 's'} · all ${toolPairs.length} tools matched to their use case.`,
       badge,
       recap: toolPairs.map(p => ({ title: p.tool, body: p.explainer }))

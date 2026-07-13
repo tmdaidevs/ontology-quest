@@ -38,20 +38,20 @@ export function mount(container, api) {
       <p>Here is the exact same fact pattern — an employee, a team, and a department — modeled two ways. Try running the reasoner on the ontology side.</p>
       <div class="sem-compare">
         <div class="sem-compare-col">
-          <h4>📊 BI-Style Semantic Model</h4>
+          <h4>BI-Style Semantic Model</h4>
           <div id="sem-bi-tables"></div>
           <p class="sem-line"><strong>Relationship:</strong> ${orgChartExample.biModel.relationship}</p>
           <p class="sem-line"><strong>Measure:</strong> <code>${orgChartExample.biModel.measure}</code></p>
           <p class="sem-caption">${orgChartExample.biModel.caption}</p>
         </div>
         <div class="sem-compare-col">
-          <h4>🧠 Formal Ontology</h4>
+          <h4>Formal Ontology</h4>
           <div class="graph-wrap" id="sem-onto-graph"></div>
           <div class="hop-controls">
-            <button class="btn btn-primary" id="btn-run-reasoner">▶ Run Reasoner</button>
+            <button class="btn btn-primary" id="btn-run-reasoner">Run Reasoner</button>
             <span class="hop-step-label" id="reasoner-status">Two facts are stated. Run the reasoner to see what it infers.</span>
           </div>
-          <p class="sem-axiom" id="sem-axiom" hidden>⚙️ ${orgChartExample.ontology.axiom}</p>
+          <p class="sem-axiom" id="sem-axiom" hidden>${orgChartExample.ontology.axiom}</p>
           <p class="sem-caption">${orgChartExample.ontology.caption}</p>
         </div>
       </div>
@@ -75,11 +75,11 @@ export function mount(container, api) {
       <div class="item-pool" id="sem-item-pool"></div>
       <div class="bucket-row">
         <div class="bucket-box" data-bucket="semantic">
-          <h4>📊 Semantic Model <small>(informal / BI-style)</small></h4>
+          <h4>Semantic Model <small>(informal / BI-style)</small></h4>
           <div class="bucket-list" id="bucket-semantic-list"></div>
         </div>
         <div class="bucket-box" data-bucket="ontology">
-          <h4>🧠 Formal Ontology</h4>
+          <h4>Formal Ontology</h4>
           <div class="bucket-list" id="bucket-ontology-list"></div>
         </div>
       </div>
@@ -119,7 +119,7 @@ export function mount(container, api) {
   const biTablesEl = container.querySelector('#sem-bi-tables');
   biTablesEl.innerHTML = orgChartExample.biModel.tables.map(t => `
     <div class="bi-table-mockup">
-      <div class="bi-table-name">🗄 ${t.name}</div>
+      <div class="bi-table-name">${t.name}</div>
       <ul class="bi-table-cols">${t.columns.map(c => `<li>${c}</li>`).join('')}</ul>
     </div>
   `).join('');
@@ -148,7 +148,7 @@ export function mount(container, api) {
       if (n) n.classList.add('highlight');
     });
     axiomEl.hidden = false;
-    reasonerStatus.textContent = '✅ Inferred: "Ada worksIn Engineering" — never stated, logically derived.';
+    reasonerStatus.textContent = 'Inferred: "Ada worksIn Engineering" — never stated, logically derived.';
     reasonerBtn.disabled = true;
   });
 
@@ -227,7 +227,7 @@ export function mount(container, api) {
       qDiv.innerHTML = `
         <div class="qtext-row">
           <p class="qtext">${qi + 1}. ${q.q}</p>
-          <button class="hint-btn" id="sem-hint-btn-${qi}">💡 Hint</button>
+          <button class="hint-btn" id="sem-hint-btn-${qi}">Hint</button>
         </div>
         <div class="hint-box" id="sem-hint-box-${qi}" hidden></div>
         <div class="quiz-options"></div>
@@ -256,7 +256,7 @@ export function mount(container, api) {
       const hintBox = qDiv.querySelector(`#sem-hint-box-${qi}`);
       hintBtn.addEventListener('click', () => {
         hintBox.hidden = false;
-        hintBox.textContent = `💡 ${q.hint}`;
+        hintBox.textContent = `${q.hint}`;
         hintBtn.disabled = true;
         hintsUsed.add(qi);
       });
@@ -270,11 +270,11 @@ export function mount(container, api) {
         const score = Math.max(0, rawScore - penalty);
         let badge = null;
         if (score === 100) {
-          const added = api.badge('semantic-analyst', 'Semantic Analyst', '🔬');
-          if (added) badge = { name: 'Semantic Analyst', icon: '🔬' };
+          const added = api.badge('semantic-analyst', 'Semantic Analyst', '');
+          if (added) badge = { name: 'Semantic Analyst', icon: '' };
         }
         api.complete(score, {
-          heading: (correctCount === semanticQuiz.length && hintsUsed.size === 0) ? '🎉 Perfect run!' : '✅ Quiz complete',
+          heading: (correctCount === semanticQuiz.length && hintsUsed.size === 0) ? 'Perfect run!' : 'Quiz complete',
           detail: `${correctCount}/${semanticQuiz.length} correct${hintsUsed.size ? ` · ${hintsUsed.size} hint${hintsUsed.size === 1 ? '' : 's'} used` : ''} — you can now tell a BI-style semantic model from a formal ontology, and explain why only one of them reasons.`,
           badge,
           recap: spectrumStages.map(s => ({ title: s.label, body: s.short }))

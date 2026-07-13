@@ -27,8 +27,8 @@ export function mount(container, api) {
         <div class="tr-row"><span class="tr-label">Visit order</span><div class="visit-trail" id="tr-trail"></div></div>
       </div>
       <div class="hop-controls">
-        <button class="btn btn-primary" id="btn-trav-step">▶ Step</button>
-        <button class="btn btn-secondary" id="btn-trav-play">▶ Auto-Play</button>
+        <button class="btn btn-primary" id="btn-trav-step">Step</button>
+        <button class="btn btn-secondary" id="btn-trav-play">Auto-Play</button>
         <button class="btn btn-ghost" id="btn-trav-reset">↺ Reset</button>
         <span class="hop-step-label" id="trav-status"></span>
       </div>
@@ -39,7 +39,7 @@ export function mount(container, api) {
       <p>Not all connections are explicit graph edges. Modern systems also compute <strong>vector embeddings</strong> for entities — coordinates in a "meaning space" where similar concepts sit close together. Below, "Wolf" has no graph edge to any of these animals, yet similarity search still finds its nearest neighbors — an <strong>approximate hop</strong> based purely on learned meaning, useful when relationships aren't explicitly modeled.</p>
       <div class="graph-wrap vec-wrap" id="graph-vector"></div>
       <div class="hop-controls">
-        <button class="btn btn-primary" id="btn-vec-search">▶ Find Nearest Neighbors to "Wolf"</button>
+        <button class="btn btn-primary" id="btn-vec-search">Find Nearest Neighbors to "Wolf"</button>
         <span class="hop-step-label" id="vec-status">Click to run an approximate-nearest-neighbor query.</span>
       </div>
       <div class="vec-results" id="vec-results"></div>
@@ -61,7 +61,7 @@ export function mount(container, api) {
       </div>
       <p class="pipeline-caption" id="pipeline-caption">Click "Next Stage" to walk through how a GraphRAG query gets answered end-to-end.</p>
       <div class="hop-controls">
-        <button class="btn btn-secondary" id="btn-pipe-next">▶ Next Stage</button>
+        <button class="btn btn-secondary" id="btn-pipe-next">Next Stage</button>
         <button class="btn btn-ghost" id="btn-pipe-reset">↺ Reset</button>
       </div>
     </div>
@@ -71,7 +71,7 @@ export function mount(container, api) {
       <div class="quiz-q">
         <div class="qtext-row">
           <p class="qtext">Why does GraphRAG use BOTH vector similarity search AND graph traversal, instead of just one?</p>
-          <button class="hint-btn" id="l7-hint-btn">💡 Hint</button>
+          <button class="hint-btn" id="l7-hint-btn">Hint</button>
         </div>
         <div class="hint-box" id="l7-hint-box" hidden></div>
         <div class="quiz-options" id="l7-quiz-opts"></div>
@@ -101,7 +101,7 @@ export function mount(container, api) {
   function stopPlay() {
     clearInterval(playTimer);
     playTimer = null;
-    btnPlay.textContent = '▶ Auto-Play';
+    btnPlay.textContent = 'Auto-Play';
   }
 
   function resetTraversal() {
@@ -147,7 +147,7 @@ export function mount(container, api) {
   btnStep.addEventListener('click', doStep);
   btnPlay.addEventListener('click', () => {
     if (playTimer) { stopPlay(); return; }
-    btnPlay.textContent = '⏸ Pause';
+    btnPlay.textContent = 'Pause';
     playTimer = setInterval(() => {
       doStep();
       if (stepIndex >= steps.length - 1) stopPlay();
@@ -275,7 +275,7 @@ export function mount(container, api) {
     const hintBox = container.querySelector('#l7-hint-box');
     hintBtn.addEventListener('click', () => {
       hintBox.hidden = false;
-      hintBox.textContent = '💡 Think about what each technique is best at: one is fuzzy/semantic (great at finding a starting point), the other is precise/structural (great at following exact relationships).';
+      hintBox.textContent = 'Think about what each technique is best at: one is fuzzy/semantic (great at finding a starting point), the other is precise/structural (great at following exact relationships).';
       hintBtn.disabled = true;
       hintUsed = true;
     });
@@ -295,11 +295,11 @@ export function mount(container, api) {
         const score = Math.max(0, base - (hintUsed ? 5 : 0));
         let badge = null;
         if (correct) {
-          const added = api.badge('algorithm-adept', 'Algorithm Adept', '🧠');
-          if (added) badge = { name: 'Algorithm Adept', icon: '🧠' };
+          const added = api.badge('algorithm-adept', 'Algorithm Adept', '');
+          if (added) badge = { name: 'Algorithm Adept', icon: '' };
         }
         api.complete(score, {
-          heading: correct && !hintUsed ? '🎉 Correct!' : '✅ Level complete',
+          heading: correct && !hintUsed ? 'Correct!' : 'Level complete',
           detail: 'You\'ve watched BFS and DFS traverse a graph, seen embedding-based similarity search find an "approximate hop," and walked through the full hybrid GraphRAG pipeline.',
           badge
         });

@@ -13,7 +13,7 @@ export function mount(container, api) {
       <div id="accordion"></div>
     </div>
     <div class="card">
-      <h3>🧪 Mini Builder: Create Semantic Triples</h3>
+      <h3>Mini Builder: Create Semantic Triples</h3>
       <p>Pick a <strong>subject</strong>, a <strong>predicate</strong> (relationship), and an <strong>object</strong> to form a triple — just like <code>(Cat, isA, Animal)</code>. Build at least 3 triples, including one hierarchy relationship (isA / subClassOf), then click <em>Validate</em>.</p>
       <div class="triple-builder">
         <select id="sel-subj"></select>
@@ -143,12 +143,12 @@ export function mount(container, api) {
 
     let badge = null;
     if (hasHierarchy && sectionsOpened.size === conceptSections.length) {
-      const added = api.badge('triple-builder', 'Triple Builder', '🧩');
-      if (added) badge = { name: 'Triple Builder', icon: '🧩' };
+      const added = api.badge('triple-builder', 'Triple Builder', '');
+      if (added) badge = { name: 'Triple Builder', icon: '' };
     }
     validated = true;
     api.complete(score, {
-      heading: hasHierarchy ? '✅ Ontology validated' : '⚠️ Needs a hierarchy',
+      heading: hasHierarchy ? 'Ontology validated' : 'Needs a hierarchy',
       detail: `Concepts explored ${sectionsOpened.size}/${conceptSections.length} · Valid-looking triples ${triples.filter(t => t.valid).length}/${triples.length}${hasHierarchy ? ' · includes an isA/subClassOf hierarchy' : ' — tip: add an isA/subClassOf triple next time'}.`,
       badge
     });

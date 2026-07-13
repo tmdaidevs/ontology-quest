@@ -22,7 +22,7 @@ export function mount(container, api) {
       <p>A single-hop lookup follows just <strong>one</strong> relationship edge from the starting node to find the answer directly.</p>
       <div class="graph-wrap" id="graph-single"></div>
       <div class="hop-controls">
-        <button class="btn btn-secondary" id="btn-single-run">▶ Run Single-Hop Query</button>
+        <button class="btn btn-secondary" id="btn-single-run">Run Single-Hop Query</button>
         <span class="hop-step-label" id="single-status"></span>
       </div>
     </div>
@@ -33,7 +33,7 @@ export function mount(container, api) {
       <p>This requires traversing <strong>multiple</strong> edges in sequence — a chain of hops — to reach entities that aren't directly connected to the start. This is exactly the kind of question a flat keyword search cannot answer, but a graph traversal can.</p>
       <div class="graph-wrap" id="graph-multi"></div>
       <div class="hop-controls">
-        <button class="btn btn-primary" id="btn-multi-next">▶ Start / Next Hop</button>
+        <button class="btn btn-primary" id="btn-multi-next">Start / Next Hop</button>
         <button class="btn btn-ghost" id="btn-multi-reset">↺ Reset</button>
         <span class="hop-step-label" id="multi-status">Click "Start" to begin the traversal.</span>
       </div>
@@ -58,7 +58,7 @@ export function mount(container, api) {
         </div>
         <div class="mock-panel" data-mp="viz">
           <div class="mp-label">3 · Graph Visualization Panel</div>
-          <div style="height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-2);">🕸️ interactive node-link canvas</div>
+          <div style="height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-2);">interactive node-link canvas</div>
         </div>
         <div class="mock-panel" data-mp="query">
           <div class="mp-label">4 · Query Builder</div>
@@ -67,7 +67,7 @@ export function mount(container, api) {
         <div class="mock-tooltip" id="mock-tooltip" hidden></div>
       </div>
       <div class="hop-controls">
-        <button class="btn btn-secondary" id="btn-tour-next">▶ Next</button>
+        <button class="btn btn-secondary" id="btn-tour-next">Next</button>
         <span class="hop-step-label" id="tour-status"></span>
       </div>
     </div>
@@ -77,7 +77,7 @@ export function mount(container, api) {
       <div class="quiz-q">
         <div class="qtext-row">
           <p class="qtext">Which retrieval approach lets an LLM gather connected, multi-hop context from a knowledge graph instead of relying only on document similarity search?</p>
-          <button class="hint-btn" id="l4-hint-btn">💡 Hint</button>
+          <button class="hint-btn" id="l4-hint-btn">Hint</button>
         </div>
         <div class="hint-box" id="l4-hint-box" hidden></div>
         <div class="quiz-options" id="l4-quiz-opts"></div>
@@ -108,14 +108,14 @@ export function mount(container, api) {
       multiHopStep = -1;
       clearHighlight(multiHandles);
       multiStatus.textContent = 'Click "Start" to begin the traversal.';
-      btnMultiNext.textContent = '▶ Start / Next Hop';
+      btnMultiNext.textContent = 'Start / Next Hop';
       return;
     }
     multiHopStep++;
     const step = multiHopQuery.steps[multiHopStep];
     setHighlight(multiHandles, { nodes: step.nodes, edges: step.edges });
     multiStatus.textContent = step.label;
-    btnMultiNext.textContent = multiHopStep < multiHopQuery.steps.length - 1 ? '▶ Next Hop' : '↺ Restart';
+    btnMultiNext.textContent = multiHopStep < multiHopQuery.steps.length - 1 ? 'Next Hop' : '↺ Restart';
     if (multiHopStep === multiHopQuery.steps.length - 1) {
       multiHopFinished = true;
       maybeShowQuiz();
@@ -126,7 +126,7 @@ export function mount(container, api) {
     multiHopStep = -1;
     clearHighlight(multiHandles);
     multiStatus.textContent = 'Click "Start" to begin the traversal.';
-    btnMultiNext.textContent = '▶ Start / Next Hop';
+    btnMultiNext.textContent = 'Start / Next Hop';
   });
 
   // --- Algorithm explainer accordion ---
@@ -213,7 +213,7 @@ export function mount(container, api) {
         <line x1="170" y1="120" x2="285" y2="120" class="inf-edge inf-explicit" style="--d:1.5s"/>
         <text x="227" y="108" class="inf-edge-label" style="--d:1.5s">isA</text>
         <path d="M55,120 Q170,20 285,120" class="inf-edge inf-inferred" style="--d:0s"/>
-        <text x="170" y="34" class="inf-edge-label inferred" style="--d:0s">isA (inferred) ⚡</text>
+        <text x="170" y="34" class="inf-edge-label inferred" style="--d:0s">isA (inferred)</text>
         <circle cx="55" cy="120" r="13" class="inf-node" style="--d:0s"/>
         <text x="55" y="148" class="inf-node-label" style="--d:0s">Cat</text>
         <circle cx="170" cy="120" r="15" class="inf-node" style="--d:0.6s"/>
@@ -279,7 +279,7 @@ export function mount(container, api) {
     const hintBox = container.querySelector('#l4-hint-box');
     hintBtn.addEventListener('click', () => {
       hintBox.hidden = false;
-      hintBox.textContent = '💡 It\'s the same term you saw on the History timeline — a hybrid of "Retrieval-Augmented Generation" and graph traversal.';
+      hintBox.textContent = 'It\'s the same term you saw on the History timeline — a hybrid of "Retrieval-Augmented Generation" and graph traversal.';
       hintBtn.disabled = true;
       hintUsed = true;
     });
@@ -299,11 +299,11 @@ export function mount(container, api) {
         const score = Math.max(0, base - (hintUsed ? 5 : 0));
         let badge = null;
         if (correct) {
-          const added = api.badge('graph-navigator', 'Graph Navigator', '🧭');
-          if (added) badge = { name: 'Graph Navigator', icon: '🧭' };
+          const added = api.badge('graph-navigator', 'Graph Navigator', '');
+          if (added) badge = { name: 'Graph Navigator', icon: '' };
         }
         api.complete(score, {
-          heading: correct && !hintUsed ? '🎉 Correct!' : '✅ Level complete',
+          heading: correct && !hintUsed ? 'Correct!' : 'Level complete',
           detail: `You've seen how single-hop lookups differ from multi-hop graph reasoning, and how GraphRAG blends symbolic and vector retrieval.`,
           badge
         });

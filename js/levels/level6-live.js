@@ -68,13 +68,13 @@ async function fetchRelations(qid, signal) {
 export function mount(container, api) {
   container.innerHTML = `
     <div class="mode-toggle" id="l6-mode-toggle">
-      <button class="mode-tab active" data-mode="free" type="button">🔭 Free Explore</button>
-      <button class="mode-tab" data-mode="challenge" type="button">🔗 Six-Hop Challenge</button>
+      <button class="mode-tab active" data-mode="free" type="button">Free Explore</button>
+      <button class="mode-tab" data-mode="challenge" type="button">Six-Hop Challenge</button>
     </div>
 
     <div id="l6-free-panel">
       <div class="card">
-        <h3>🌐 Live Knowledge Graph Explorer</h3>
+        <h3>Live Knowledge Graph Explorer</h3>
         <p>Every other level used curated examples. This one is <strong>live</strong> — you're querying <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>, a real public knowledge graph of 100M+ entities, through its actual SPARQL endpoint, in your browser, right now. Search for a person, place, or concept, then click any related entity to <strong>hop</strong> across real RDF relationships — the same multi-hop traversal you saw simulated in Level 4.</p>
         <div class="live-search-row">
           <input type="text" id="l6-search-input" placeholder="Search Wikidata… e.g. 'Ada Lovelace'" autocomplete="off" />
@@ -92,7 +92,7 @@ export function mount(container, api) {
         <p style="color:var(--text-2); font-size:0.85rem; margin-top:10px;">Click a node above, or an item below, to hop one relationship deeper.</p>
         <div class="live-rel-list" id="l6-rel-list"></div>
         <div class="sparql-toggle">
-          <button class="btn btn-ghost" id="l6-toggle-sparql">🔎 View live SPARQL query</button>
+          <button class="btn btn-ghost" id="l6-toggle-sparql">View live SPARQL query</button>
           <div class="sparql-box" id="l6-sparql-box" hidden></div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export function mount(container, api) {
 
     <div id="l6-challenge-panel" hidden>
       <div class="card">
-        <h3>🔗 Six-Hop Challenge</h3>
+        <h3>Six-Hop Challenge</h3>
         <p>Starting from a random <strong>live</strong> Wikidata entity, hop across real relationships without ever revisiting a node — reach <strong>6 hops</strong> to complete the challenge. If every remaining relationship leads back to somewhere you've already been, the run ends there and you're scored on hops achieved.</p>
         <div class="challenge-hud" id="l6-challenge-hud" hidden>
           <div class="chud-stat"><span class="chud-label">Hops</span><span class="chud-value" id="l6-chud-hops">0 / 6</span></div>
@@ -108,7 +108,7 @@ export function mount(container, api) {
         </div>
         <div class="live-status-row" id="l6-challenge-status"></div>
         <div class="hop-controls">
-          <button class="btn btn-primary" id="l6-challenge-start" type="button">🎲 Start Challenge</button>
+          <button class="btn btn-primary" id="l6-challenge-start" type="button">Start Challenge</button>
         </div>
       </div>
       <div class="card" id="l6-challenge-explore-card" hidden>
@@ -241,8 +241,8 @@ export function mount(container, api) {
       renderResults(results);
     } catch (err) {
       if (err.name === 'AbortError') return;
-      if (err.name === 'TimeoutError') setStatus(searchStatusEl, '⏱️ Search timed out — Wikidata may be slow right now. Try again.', false, true);
-      else setStatus(searchStatusEl, '⚠️ Search failed — check your connection and try again.', false, true);
+      if (err.name === 'TimeoutError') setStatus(searchStatusEl, 'Search timed out — Wikidata may be slow right now. Try again.', false, true);
+      else setStatus(searchStatusEl, 'Search failed — check your connection and try again.', false, true);
     } finally {
       clearSearchTimeout();
     }
@@ -293,8 +293,8 @@ export function mount(container, api) {
       }
     } catch (err) {
       if (err.name === 'AbortError') return;
-      if (err.name === 'TimeoutError') setStatus(searchStatusEl, '⏱️ Lookup timed out — Wikidata may be slow right now. Try again.', false, true);
-      else setStatus(searchStatusEl, '⚠️ Search failed — check your connection and try again.', false, true);
+      if (err.name === 'TimeoutError') setStatus(searchStatusEl, 'Lookup timed out — Wikidata may be slow right now. Try again.', false, true);
+      else setStatus(searchStatusEl, 'Search failed — check your connection and try again.', false, true);
     } finally {
       clearQuickTimeout();
     }
@@ -340,14 +340,14 @@ export function mount(container, api) {
       );
       if (!badgeEarned) {
         badgeEarned = true;
-        api.badge('live-explorer', 'Live Data Explorer', '🌐');
+        api.badge('live-explorer', 'Live Data Explorer', '');
       }
     } catch (err) {
       if (err.name === 'AbortError') return;
       if (err.name === 'TimeoutError') {
-        setStatus(statusEl, '⏱️ The Wikidata SPARQL endpoint is taking too long to respond. Please try again in a moment.', false, true);
+        setStatus(statusEl, 'The Wikidata SPARQL endpoint is taking too long to respond. Please try again in a moment.', false, true);
       } else {
-        setStatus(statusEl, '⚠️ Could not reach the Wikidata SPARQL endpoint right now. Please try again in a moment.', false, true);
+        setStatus(statusEl, 'Could not reach the Wikidata SPARQL endpoint right now. Please try again in a moment.', false, true);
       }
     } finally {
       clearExploreTimeout();
@@ -365,8 +365,8 @@ export function mount(container, api) {
       }
       const crumb = document.createElement('span');
       const isCurrent = i === trail.length - 1;
-      crumb.className = 'live-crumb' + (isCurrent ? ' current' : '');
-      crumb.textContent = (i === 0 ? '🎯 ' : '') + t.label;
+      crumb.className = 'live-crumb' + (isCurrent ? ' current' : '') + (i === 0 ? ' start' : '');
+      crumb.textContent = t.label;
       if (!isCurrent) crumb.addEventListener('click', () => jumpToBreadcrumb(i));
       breadcrumbsEl.appendChild(crumb);
     });
@@ -375,7 +375,7 @@ export function mount(container, api) {
   sparqlToggleBtn.addEventListener('click', () => {
     sparqlVisible = !sparqlVisible;
     sparqlBox.hidden = !sparqlVisible;
-    sparqlToggleBtn.textContent = sparqlVisible ? '🔎 Hide SPARQL query' : '🔎 View live SPARQL query';
+    sparqlToggleBtn.textContent = sparqlVisible ? 'Hide SPARQL query' : 'View live SPARQL query';
   });
 
   // --- Six-Hop Challenge: chain live hops without ever revisiting a node ---
@@ -404,7 +404,7 @@ export function mount(container, api) {
     challengeTrail = [];
     challengeHud.hidden = false;
     challengeExploreCard.hidden = false;
-    challengeStartBtn.textContent = '🎲 New Random Start';
+    challengeStartBtn.textContent = 'New Random Start';
     updateChallengeHud();
     renderChallengeTrail();
     challengeGraphEl.innerHTML = '';
@@ -423,7 +423,7 @@ export function mount(container, api) {
       await loadChallengeEntity(start.id, start.label);
     } catch (err) {
       if (err.name === 'AbortError') return;
-      setStatus(challengeStatusEl, '⚠️ Could not reach Wikidata right now. Please try again.', false, true);
+      setStatus(challengeStatusEl, 'Could not reach Wikidata right now. Please try again.', false, true);
     } finally {
       clearStartTimeout();
     }
@@ -452,7 +452,7 @@ export function mount(container, api) {
       renderRelListInto(challengeRelListEl, rels, hopToChallenge, challengeVisited);
       if (!badgeEarned) {
         badgeEarned = true;
-        api.badge('live-explorer', 'Live Data Explorer', '🌐');
+        api.badge('live-explorer', 'Live Data Explorer', '');
       }
       const unvisited = rels.filter(r => !challengeVisited.has(r.valueQid));
       if (challengeHops >= 6) {
@@ -465,9 +465,9 @@ export function mount(container, api) {
     } catch (err) {
       if (err.name === 'AbortError') return;
       if (err.name === 'TimeoutError') {
-        setStatus(challengeStatusEl, '⏱️ The Wikidata SPARQL endpoint is taking too long to respond. Please try again.', false, true);
+        setStatus(challengeStatusEl, 'The Wikidata SPARQL endpoint is taking too long to respond. Please try again.', false, true);
       } else {
-        setStatus(challengeStatusEl, '⚠️ Could not reach the Wikidata SPARQL endpoint right now. Please try again.', false, true);
+        setStatus(challengeStatusEl, 'Could not reach the Wikidata SPARQL endpoint right now. Please try again.', false, true);
       }
     } finally {
       clearHopTimeout();
@@ -480,7 +480,7 @@ export function mount(container, api) {
 
   function renderChallengeTrail() {
     challengeTrailEl.innerHTML = challengeTrail
-      .map((t, i) => `<span class="ct-node">${i === 0 ? '🎯 ' : ''}${escapeHtml(t.label)}</span>`)
+      .map((t, i) => `<span class="ct-node${i === 0 ? ' start' : ''}">${escapeHtml(t.label)}</span>`)
       .join('<span class="ct-arrow">→</span>');
   }
 
@@ -489,17 +489,17 @@ export function mount(container, api) {
     const score = Math.max(0, Math.min(100, Math.round((challengeHops / 6) * 100)));
     let badge = null;
     if (success) {
-      const added = api.badge('six-hop-voyager', 'Six-Hop Voyager', '🔗');
-      if (added) badge = { name: 'Six-Hop Voyager', icon: '🔗' };
+      const added = api.badge('six-hop-voyager', 'Six-Hop Voyager', '');
+      if (added) badge = { name: 'Six-Hop Voyager', icon: '' };
     }
     setStatus(
       challengeStatusEl,
       success
-        ? '🎉 You reached all 6 live hops without repeating a node!'
-        : `⛓️ Every remaining relationship led back to an already-visited node — the run ends at ${challengeHops} hop${challengeHops === 1 ? '' : 's'}.`
+        ? 'You reached all 6 live hops without repeating a node!'
+        : `Every remaining relationship led back to an already-visited node — the run ends at ${challengeHops} hop${challengeHops === 1 ? '' : 's'}.`
     );
     api.complete(score, {
-      heading: success ? '🎉 Six-Hop Challenge complete!' : 'Challenge ended — nice run',
+      heading: success ? 'Six-Hop Challenge complete!' : 'Challenge ended — nice run',
       detail: `You chained ${challengeHops} live Wikidata relationship${challengeHops === 1 ? '' : 's'} in a row without ever revisiting a node.`,
       badge,
       recap: [
