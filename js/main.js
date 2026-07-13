@@ -4,7 +4,6 @@ import { animateCount, animateCountTargets } from './ui-utils.js';
 import { openIntro, initIntro } from './intro.js';
 import { sfx, isMuted, toggleMuted } from './sound.js';
 import { burstConfetti } from './confetti.js';
-import { mount as mountDaily } from './daily-challenge.js';
 import { init as initBgConstellation, start as startBgConstellation, stop as stopBgConstellation } from './bg-constellation.js';
 import { downloadShareCard } from './share-card.js';
 import { openCertificateModal, coreLevelsComplete } from './certificate.js';
@@ -19,7 +18,8 @@ const levelMeta = [
   { num: 5, id: 'level-5', title: 'Build Your Own Ontology', desc: 'Design a knowledge graph in a sandbox.' },
   { num: 6, id: 'level-6', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true },
   { num: 7, id: 'level-7', title: 'Algorithms Visualized', desc: 'Watch BFS, DFS, embedding search & GraphRAG animated step-by-step.', bonus: true },
-  { num: 8, id: 'level-8', title: 'Enterprise Case Studies', desc: 'How Google, Amazon, LinkedIn, healthcare, Microsoft & Palantir use knowledge graphs at scale.', bonus: true }
+  { num: 8, id: 'level-8', title: 'Enterprise Case Studies', desc: 'How Google, Amazon, LinkedIn, healthcare, Microsoft & Palantir use knowledge graphs at scale.', bonus: true },
+  { num: 9, id: 'level-9', title: 'Semantic Models vs Ontologies', desc: 'Where taxonomies, BI-style semantic models, and formal ontologies actually differ.', bonus: true }
 ];
 
 // Lazily import level modules only when needed to keep initial load light.
@@ -31,14 +31,15 @@ const levelLoaders = {
   5: () => import('./levels/level5-sandbox.js'),
   6: () => import('./levels/level6-live.js'),
   7: () => import('./levels/level7-algorithms.js'),
-  8: () => import('./levels/level8-enterprise.js')
+  8: () => import('./levels/level8-enterprise.js'),
+  9: () => import('./levels/level9-semantic.js')
 };
 
 const screens = {
   landing: document.getElementById('screen-landing'),
   map: document.getElementById('screen-map')
 };
-for (let i = 1; i <= 8; i++) {
+for (let i = 1; i <= 9; i++) {
   screens[`level-${i}`] = document.getElementById(`screen-level-${i}`);
 }
 
@@ -372,8 +373,6 @@ lastKnownScore = progress.totalScore();
 updateTopbar();
 initIntro({ onFinish: () => navTo('map') });
 
-// Ambient background animation + Daily Challenge card both live on the landing screen.
+// Ambient background animation lives behind the landing hero.
 initBgConstellation(document.getElementById('landing-bg-canvas'));
 if (screens.landing && screens.landing.classList.contains('active')) startBgConstellation();
-const dailySlot = document.getElementById('daily-challenge-slot');
-if (dailySlot) mountDaily(dailySlot);

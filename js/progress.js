@@ -8,7 +8,6 @@ const defaultState = () => ({
   scores: {},            // { 1: 80, 2: 100, ... } best score per level (0-100)
   badges: [],            // [{ id, name, icon }]
   sandbox: {},           // persisted sandbox ontologies keyed by scenario id
-  dailyChallenge: { lastDate: null, streak: 0 }, // date-seeded daily question streak
   certificateName: ''    // last name typed into the completion certificate
 });
 
@@ -85,31 +84,6 @@ export function loadSandbox(scenarioId) {
 export function resetProgress() {
   state = defaultState();
   save();
-}
-
-/** Current daily-challenge streak info: { lastDate: 'YYYY-MM-DD'|null, streak: number }. */
-export function getDailyState() {
-  return state.dailyChallenge || { lastDate: null, streak: 0 };
-}
-
-/**
- * Records today's daily challenge as done and updates the streak counter.
- * Calling it again the same day is a no-op (returns the existing streak).
- * The streak continues only if the previous completion was exactly one day earlier.
- */
-export function completeDaily(todayStr) {
-  const d = getDailyState();
-  if (d.lastDate === todayStr) return d.streak;
-  let streak = 1;
-  if (d.lastDate) {
-    const prevMs = Date.parse(`${d.lastDate}T00:00:00Z`);
-    const todayMs = Date.parse(`${todayStr}T00:00:00Z`);
-    const diffDays = Math.round((todayMs - prevMs) / 86400000);
-    if (diffDays === 1) streak = d.streak + 1;
-  }
-  state.dailyChallenge = { lastDate: todayStr, streak };
-  save();
-  return streak;
 }
 
 export function getCertificateName() {

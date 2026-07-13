@@ -1108,7 +1108,7 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 }
 
 /* ==========================================================================
-   Session 3 enhancements: sound toggle, ambient background, daily challenge,
+   Session 3 enhancements: sound toggle, ambient background,
    progress rail, achievements row, confetti, Level 6 challenge mode, certificate.
    ========================================================================== */
 
@@ -1129,27 +1129,7 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 /* Ambient constellation canvas behind the landing hero. */
 #screen-landing { position: relative; }
 .landing-bg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-.landing-hero, .daily-challenge-wrap { position: relative; z-index: 1; }
-
-/* Daily Challenge card (landing screen) */
-.daily-challenge-wrap { max-width: 640px; margin: 0 auto 40px; }
-.daily-card {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-2);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-}
-.daily-card.done { border-left-color: var(--success); opacity: 0.92; }
-.daily-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-.daily-streak { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-2); }
-.daily-q { font-size: 1rem; color: var(--text-0); margin: 0 0 14px; font-weight: 600; }
-.daily-opts { display: flex; flex-direction: column; gap: 8px; }
-.daily-opt { text-align: left; text-transform: none; letter-spacing: normal; font-family: var(--font-sans); font-weight: 400; }
-.daily-msg { color: var(--text-1); margin: 0; }
-.daily-feedback { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); color: var(--text-1); font-size: 0.9rem; }
-.daily-feedback p { margin: 0 0 6px; }
-.daily-streak-update { color: var(--accent-2); font-family: var(--font-mono); font-size: 0.82rem; }
+.landing-hero { position: relative; z-index: 1; }
 
 /* Progress rail (level map) — a connected chain of the 5 core levels. */
 .progress-rail { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
@@ -1168,6 +1148,61 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 
 /* Achievements row (level map) — share card + certificate. */
 .achievements-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+
+/* ==========================================================================
+   Level 9: Semantic Models vs Ontologies.
+   ========================================================================== */
+.sem-spectrum .pipeline-stage { min-width: 96px; }
+.sem-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 12px; }
+.sem-compare-col h4 { margin: 0 0 10px; }
+.sem-line { margin: 6px 0; color: var(--text-1); font-size: 0.92rem; }
+.sem-line code { color: var(--accent-2); background: var(--bg-2); padding: 1px 6px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.85rem; }
+.sem-caption { color: var(--text-2); font-size: 0.85rem; margin-top: 12px; line-height: 1.6; }
+.sem-axiom { color: var(--accent-2); font-family: var(--font-mono); font-size: 0.82rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; margin: 12px 0 0; }
+
+.bi-table-mockup { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 10px; }
+.bi-table-name { font-family: var(--font-mono); font-weight: 700; color: var(--text-0); margin-bottom: 6px; font-size: 0.9rem; }
+.bi-table-cols { margin: 0; padding-left: 18px; color: var(--text-1); font-size: 0.82rem; font-family: var(--font-mono); }
+.bi-table-cols li { margin-bottom: 2px; }
+
+.g-edge.inferred line { stroke: var(--accent-2); stroke-dasharray: 5 4; }
+.g-edge.inferred text { fill: var(--accent-2); font-style: italic; font-weight: 700; }
+
+.table-scroll { overflow-x: auto; margin-top: 12px; }
+.sem-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 640px; }
+.sem-table th, .sem-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.sem-table th { color: var(--accent); font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border-bright); }
+.sem-table td { color: var(--text-1); }
+.sem-table td:first-child { color: var(--text-0); font-weight: 600; white-space: nowrap; }
+.sem-table tbody tr:hover { background: var(--bg-2); }
+
+.item-pool { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.item-chip {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-1); font-family: var(--font-sans); font-size: 0.82rem; padding: 8px 12px;
+  cursor: pointer; transition: all 0.15s ease; max-width: 320px; text-align: left;
+}
+.item-chip:hover { border-color: var(--accent); color: var(--text-0); }
+.item-chip.selected { border-color: var(--accent-3); box-shadow: 0 0 0 3px rgba(91,149,255,0.2); color: var(--text-0); }
+.item-chip.placed { display: none; }
+.item-chip.shake { animation: shake 0.4s ease; border-color: var(--danger); }
+.bucket-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.bucket-box {
+  background: var(--bg-1); border: 1px dashed var(--border-bright); border-radius: var(--radius);
+  padding: 14px 16px; min-height: 120px; cursor: pointer; transition: all 0.15s ease;
+}
+.bucket-box:hover { border-color: var(--accent); background: var(--accent-soft); }
+.bucket-box.shake { animation: shake 0.4s ease; border-color: var(--danger); }
+.bucket-box h4 { margin: 0 0 10px; font-size: 0.88rem; }
+.bucket-box h4 small { color: var(--text-2); font-weight: 400; }
+.bucket-list { display: flex; flex-direction: column; gap: 6px; }
+.bucket-item { color: var(--success); font-size: 0.8rem; line-height: 1.4; }
+
+.anim-pop { animation: popIn 0.4s cubic-bezier(0.3, 1.4, 0.6, 1) both; }
+
+@media (max-width: 720px) {
+  .sem-compare, .bucket-row { grid-template-columns: 1fr; }
+}
 
 /* Confetti burst canvas (owned/removed by confetti.js). */
 .confetti-canvas { position: fixed; inset: 0; z-index: 300; pointer-events: none; }

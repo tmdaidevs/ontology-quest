@@ -1,6 +1,6 @@
 # 🕸️ Ontology Quest
 
-**Ontology Quest** is a free, single-page, browser-based educational game that teaches **ontologies**, **knowledge graphs**, and the standards/technologies (RDF, OWL, SPARQL, GraphRAG, and more) behind them — through five short, interactive levels, plus three bonus levels: one that queries a **real, live public knowledge graph**, one that animates the **algorithms** powering multi-hop reasoning, and one that tours **real enterprise knowledge graphs** at scale.
+**Ontology Quest** is a free, single-page, browser-based educational game that teaches **ontologies**, **knowledge graphs**, and the standards/technologies (RDF, OWL, SPARQL, GraphRAG, and more) behind them — through five short, interactive levels, plus four bonus levels: one that queries a **real, live public knowledge graph**, one that animates the **algorithms** powering multi-hop reasoning, one that tours **real enterprise knowledge graphs** at scale, and one that untangles **semantic models vs. ontologies**.
 
 No backend, no build step, no login. Everything runs as static HTML/CSS/JS and your progress is saved locally in your browser (`localStorage`).
 
@@ -22,6 +22,7 @@ Ontologies are formal, explicit specifications of the concepts, relationships, a
 | ✨ | 🌐 **Bonus: Live Knowledge Graph Explorer** | Always unlocked. Query **[Wikidata](https://www.wikidata.org)** — a real public knowledge graph of 100M+ entities — live, straight from your browser via its actual SPARQL endpoint. **Free Explore**: search any person, place, or concept and hop across real RDF relationships, viewing the live SPARQL query behind every hop. **Six-Hop Challenge**: start from a random live entity and try to reach 6 hops without ever revisiting a node — a race against a real, unpredictable graph. |
 | ✨ | **Bonus: Algorithms Visualized** | Always unlocked. Watch the actual algorithms behind graph reasoning run step-by-step: toggle between **BFS** (queue) and **DFS** (stack) and step or auto-play a traversal across the same class hierarchy to see how visit order differs; run a live **embedding similarity search** that finds "Wolf"'s nearest neighbors by vector distance alone (no explicit graph edge required) with an animated radiating search circle; then walk through the full **5-stage hybrid GraphRAG pipeline** (question → vector search → graph traversal → assembled context → LLM answer) that ties both techniques together. |
 | ✨ | 🏢 **Bonus: Enterprise Case Studies** | Always unlocked. See ontologies at production scale: a log-scale bar chart comparing entity/fact counts across real deployments, then six expandable case studies — Google Knowledge Graph, Amazon's Product Graph, LinkedIn's Economic Graph, SNOMED CT (healthcare), Microsoft Graph, and Palantir's Foundry Ontology — each with verified stats, a narrative, an "ontology snapshot" mini-diagram of how it's actually modeled, and its tech stack. Finish with a 6-question quiz to earn the Enterprise Analyst badge. |
+| ✨ | 🔬 **Bonus: Semantic Models vs. Ontologies** | Always unlocked. Untangle one of the most overloaded terms in data & AI: click through an interactive 6-stage **spectrum of semantic precision** (tags → controlled vocabulary → taxonomy → thesaurus → BI-style semantic model → formal ontology), then compare the exact same org-chart facts modeled two ways — a Power BI-style semantic model side by side with a formal OWL ontology where you can **run a live reasoner** and watch it infer a brand-new fact from an axiom. Sort 8 real-world artifacts into the correct bucket, then take a 5-question quiz to earn the Semantic Analyst badge. |
 
 Every level's quiz includes an optional **hint button** (small score penalty) if you get stuck, and a **"Next Level →" button** appears the moment you finish, so you can keep moving without returning to the map.
 
@@ -34,9 +35,8 @@ Ontology Quest also layers in a handful of engagement features on top of the cor
 - 🔊 **Sound design** — short synthesized SFX (Web Audio API, no audio files) for correct/wrong answers, hints, graph hops, badges, and level completion, with a one-click mute toggle that's remembered between visits.
 - 🌌 **Living background** — a subtle animated constellation of drifting, connecting nodes behind the landing screen, echoing the "everything is a graph" theme from the first frame.
 - 🎉 **Confetti celebrations** — a canvas-based confetti burst plays whenever you complete a level, with a richer gold burst for a perfect score.
-- 🗓️ **Daily Challenge** — one fresh, date-seeded ontology question on the landing screen every day, with a streak counter that rewards coming back.
 - 🕸️ **Progress rail** — the level-select map shows your 5 core levels as a connected node chain (done ✓ / active / locked), so your journey reads like the graphs you're learning about.
-- 🏅 **Badges** — per-level badges (History Scholar, Triple Builder, Perfect Matcher, Graph Navigator, Ontology Architect, Live Explorer, Six-Hop Voyager, Algorithm Adept, Enterprise Analyst) plus cross-level **meta-badges** for skilled play: Sharp Mind 💡 (no hints, 90+ score), Speedrunner ⚡ (under a minute, 70+ score), Perfectionist 💎 (100% on every core level), and Completionist 🏆 (finish all 8 levels).
+- 🏅 **Badges** — per-level badges (History Scholar, Triple Builder, Perfect Matcher, Graph Navigator, Ontology Architect, Live Explorer, Six-Hop Voyager, Algorithm Adept, Enterprise Analyst, Semantic Analyst) plus cross-level **meta-badges** for skilled play: Sharp Mind 💡 (no hints, 90+ score), Speedrunner ⚡ (under a minute, 70+ score), Perfectionist 💎 (100% on every core level), and Completionist 🏆 (finish all 9 levels).
 - 🖼️ **Shareable score card** — generate a PNG snapshot of your score and badges to share anywhere.
 - 🎓 **Certificate of completion** — once all 5 core levels are done, download a personalized "Ontology Quest — Certificate of Completion" PNG with your name, score, and badge count — ready to attach to a LinkedIn "Licenses & Certifications" entry.
 
@@ -46,17 +46,17 @@ Ontology Quest also layers in a handful of engagement features on top of the cor
 - Inline SVG + `<canvas>` for all graph visualizations, animations, confetti, and generated images (no external chart/graphics library dependency).
 - Web Audio API for synthesized sound effects (no audio files shipped).
 - Live data via the public [Wikidata](https://www.wikidata.org) Search API and SPARQL endpoint (Live Knowledge Graph Explorer bonus level) — no API key required.
-- `localStorage` for progress, scores, badges, daily-challenge streaks, and sandbox ontologies.
+- `localStorage` for progress, scores, badges, and sandbox ontologies.
 - Deployed via **GitHub Pages** using a GitHub Actions workflow (`.github/workflows/deploy.yml`).
 
 ## Project structure
 
 ```
-index.html                # Single-page app shell (landing, level map, 8 level/bonus screens)
+index.html                # Single-page app shell (landing, level map, 9 level/bonus screens)
 css/style.css             # Dark theme, animations, responsive layout
 js/
   main.js                  # Navigation, level map rendering, level mounting, next-level flow, badges
-  progress.js              # localStorage-backed progress/score/badge/streak tracking
+  progress.js              # localStorage-backed progress/score/badge tracking
   graph-svg.js             # Small reusable SVG node-link rendering helper (+ hub-spoke layout)
   graph-algorithms.js      # Pure BFS/DFS traversal step generators (Level 7)
   vector-space-svg.js      # SVG embedding scatter-plot + nearest-neighbor + search-circle animation (Level 7)
@@ -64,11 +64,10 @@ js/
   sound.js                 # Web Audio SFX helper (correct/wrong/hint/hop/badge/level-complete) + mute toggle
   confetti.js              # Lightweight canvas confetti burst
   bg-constellation.js      # Animated drifting node/edge background for the landing screen
-  daily-challenge.js       # Date-seeded daily question card + streak tracking
   share-card.js            # Canvas-rendered shareable score/badge PNG
   certificate.js           # Canvas-rendered "Certificate of Completion" PNG + modal UI
-  data/                    # Content data per level (timeline, concepts, tools, graphs, scenarios, algo-graph.js, case-studies.js)
-  levels/                  # One module per level (level1-history.js … level5-sandbox.js, level6-live.js, level7-algorithms.js, level8-enterprise.js bonus levels)
+  data/                    # Content data per level (timeline, concepts, tools, graphs, scenarios, algo-graph.js, case-studies.js, semantic-models.js)
+  levels/                  # One module per level (level1-history.js … level5-sandbox.js, level6-live.js, level7-algorithms.js, level8-enterprise.js, level9-semantic.js bonus levels)
 .github/workflows/deploy.yml  # GitHub Pages deployment workflow
 ```
 
