@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ontology Quest — Learn Knowledge Graphs &amp; Ontologies</title>
+<meta name="description" content="An interactive game that teaches ontologies, knowledge graphs, RDF/OWL, and GraphRAG through 5 playable levels." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" data-nav="landing">
+        <span class="brand-icon">🕸️</span>
+        <span class="brand-name">Ontology Quest</span>
+      </div>
+      <div class="topbar-stats" id="topbar-stats" hidden>
+        <div class="stat" title="Total score">
+          <span class="stat-icon">⭐</span><span id="stat-score">0</span>
+        </div>
+        <div class="stat" title="Badges earned">
+          <span class="stat-icon">🏅</span><span id="stat-badges">0</span>
+        </div>
+        <button class="btn btn-ghost" id="btn-map" title="Level map">🗺️ Map</button>
+        <button class="btn btn-ghost btn-danger" id="btn-reset" title="Reset progress">↺ Reset</button>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <!-- LANDING SCREEN -->
+      <section class="screen active" id="screen-landing">
+        <div class="landing-hero">
+          <h1>Ontology Quest</h1>
+          <p class="tagline">Master the art &amp; science of <strong>knowledge graphs</strong> and <strong>ontologies</strong> — from Aristotle to GraphRAG — in five bite-sized, interactive levels.</p>
+          <ul class="hero-points">
+            <li>📜 Discover the history of knowledge representation</li>
+            <li>🧩 Learn classes, triples, and relationships hands-on</li>
+            <li>🛠️ Compare real ontology &amp; graph technologies</li>
+            <li>🔍 Visualize multi-hop reasoning &amp; GraphRAG</li>
+            <li>🏗️ Design your own ontology from scratch</li>
+          </ul>
+          <button class="btn btn-primary btn-large" id="btn-start">Begin Quest →</button>
+          <p class="hero-note">No login. No install. Your progress is saved automatically in this browser.</p>
+        </div>
+      </section>
+
+      <!-- LEVEL MAP SCREEN -->
+      <section class="screen" id="screen-map">
+        <h2 class="section-title">Choose Your Level</h2>
+        <p class="section-sub">Complete each level to unlock the next. Replay anytime to improve your score.</p>
+        <div class="level-grid" id="level-grid"><!-- populated by JS --></div>
+        <div class="badge-shelf" id="badge-shelf"></div>
+      </section>
+
+      <!-- LEVEL CONTAINERS (mounted dynamically) -->
+      <section class="screen level-screen" id="screen-level-1">
+        <div class="level-header">
+          <button class="btn btn-ghost back-btn" data-nav="map">← Map</button>
+          <h2>Level 1 · The History of Ontologies</h2>
+        </div>
+        <div class="level-body" id="level-1-body"></div>
+      </section>
+
+      <section class="screen level-screen" id="screen-level-2">
+        <div class="level-header">
+          <button class="btn btn-ghost back-btn" data-nav="map">← Map</button>
+          <h2>Level 2 · Core Concepts</h2>
+        </div>
+        <div class="level-body" id="level-2-body"></div>
+      </section>
+
+      <section class="screen level-screen" id="screen-level-3">
+        <div class="level-header">
+          <button class="btn btn-ghost back-btn" data-nav="map">← Map</button>
+          <h2>Level 3 · Tools &amp; Standards</h2>
+        </div>
+        <div class="level-body" id="level-3-body"></div>
+      </section>
+
+      <section class="screen level-screen" id="screen-level-4">
+        <div class="level-header">
+          <button class="btn btn-ghost back-btn" data-nav="map">← Map</button>
+          <h2>Level 4 · Under the Hood: Multi-Hop Reasoning</h2>
+        </div>
+        <div class="level-body" id="level-4-body"></div>
+      </section>
+
+      <section class="screen level-screen" id="screen-level-5">
+        <div class="level-header">
+          <button class="btn btn-ghost back-btn" data-nav="map">← Map</button>
+          <h2>Level 5 · Build Your Own Ontology</h2>
+        </div>
+        <div class="level-body" id="level-5-body"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Ontology Quest — an open-source educational game about knowledge graphs.</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
