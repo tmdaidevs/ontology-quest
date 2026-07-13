@@ -1,6 +1,5 @@
 // level1-history.js — Interactive timeline + quiz on the history of ontologies.
 import { timelineEvents, historyQuiz } from '../data/timeline.js';
-import { animateCountTargets } from '../ui-utils.js';
 
 export function mount(container, api) {
   const viewed = new Set();
@@ -98,27 +97,22 @@ export function mount(container, api) {
       }
     });
 
-    const resultDiv = document.createElement('div');
-    resultDiv.id = 'quiz-result';
-    resultDiv.style.marginTop = '16px';
-    body.appendChild(resultDiv);
-
     function checkDone() {
       if (answers.every(a => a !== null)) {
         const correctCount = answers.filter((a, i) => a === historyQuiz[i].answer).length;
         const rawScore = Math.round((correctCount / historyQuiz.length) * 100);
         const penalty = Math.min(rawScore, hintsUsed.size * 5);
         const score = Math.max(0, rawScore - penalty);
-        resultDiv.innerHTML = `
-          <div class="completion-banner">
-            <h3>${correctCount === historyQuiz.length && hintsUsed.size === 0 ? '🎉 Perfect!' : '✅ Level Complete'}</h3>
-            <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100 (${correctCount}/${historyQuiz.length} correct${hintsUsed.size ? `, ${hintsUsed.size} hint${hintsUsed.size === 1 ? '' : 's'} used` : ''})</p>
-            <p>You've traced ontologies from Aristotle to GraphRAG!</p>
-          </div>
-        `;
-        animateCountTargets(resultDiv);
-        if (score === 100) api.badge('history-scholar', 'History Scholar', '📜');
-        api.complete(score);
+        let badge = null;
+        if (score === 100) {
+          const added = api.badge('history-scholar', 'History Scholar', '📜');
+          if (added) badge = { name: 'History Scholar', icon: '📜' };
+        }
+        api.complete(score, {
+          heading: (correctCount === historyQuiz.length && hintsUsed.size === 0) ? '🎉 Perfect run!' : '✅ Quiz complete',
+          detail: `${correctCount}/${historyQuiz.length} correct${hintsUsed.size ? ` · ${hintsUsed.size} hint${hintsUsed.size === 1 ? '' : 's'} used` : ''} — you've traced ontologies from Aristotle to GraphRAG.`,
+          badge
+        });
       }
     }
   }

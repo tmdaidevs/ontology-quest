@@ -1,6 +1,5 @@
 // level3-solutions.js — Match tool/standard to its best-fit use case, then show explainer cards.
 import { toolPairs } from '../data/tools.js';
-import { animateCountTargets } from '../ui-utils.js';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -20,11 +19,6 @@ export function mount(container, api) {
         <div class="match-col" id="col-tools"></div>
         <div class="match-col" id="col-uses"></div>
       </div>
-    </div>
-    <div class="card" id="explainer-card" hidden>
-      <h3>What You Learned</h3>
-      <div class="tool-explainer" id="explainer-grid"></div>
-      <div id="level3-result" style="margin-top:16px;"></div>
     </div>
   `;
 
@@ -91,25 +85,17 @@ export function mount(container, api) {
   }
 
   function showExplainers() {
-    const explCard = container.querySelector('#explainer-card');
-    explCard.hidden = false;
-    const grid = container.querySelector('#explainer-grid');
-    toolPairs.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'te-card';
-      div.innerHTML = `<h4>${p.tool}</h4><p>${p.explainer}</p>`;
-      grid.appendChild(div);
-    });
     const score = Math.max(20, 100 - mistakes * 8);
-    container.querySelector('#level3-result').innerHTML = `
-      <div class="completion-banner">
-        <h3>${mistakes === 0 ? '🏆 Flawless Match!' : '✅ Level Complete'}</h3>
-        <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100 (${mistakes} mistake${mistakes === 1 ? '' : 's'})</p>
-      </div>
-    `;
-    animateCountTargets(container.querySelector('#level3-result'));
-    if (mistakes === 0) api.badge('perfect-matcher', 'Perfect Matcher', '🎯');
-    api.complete(score);
-    explCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    let badge = null;
+    if (mistakes === 0) {
+      const added = api.badge('perfect-matcher', 'Perfect Matcher', '🎯');
+      if (added) badge = { name: 'Perfect Matcher', icon: '🎯' };
+    }
+    api.complete(score, {
+      heading: mistakes === 0 ? '🏆 Flawless match!' : '✅ Level complete',
+      detail: `${mistakes} mistake${mistakes === 1 ? '' : 's'} · all ${toolPairs.length} tools matched to their use case.`,
+      badge,
+      recap: toolPairs.map(p => ({ title: p.tool, body: p.explainer }))
+    });
   }
 }

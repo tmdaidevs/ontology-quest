@@ -1,7 +1,6 @@
 // level5-sandbox.js — Build-your-own ontology sandbox: node-link editor + validation checklist.
 import { scenarios } from '../data/scenarios.js';
 import { saveSandbox, loadSandbox } from '../progress.js';
-import { animateCountTargets } from '../ui-utils.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const HIERARCHY_LABELS = ['isa', 'subclassof', 'kindof', 'typeof'];
@@ -40,8 +39,6 @@ export function mount(container, api) {
       <div style="margin-top:14px;">
         <button class="btn btn-primary" id="btn-validate-ontology">✅ Validate My Ontology</button>
       </div>
-      <ul class="checklist" id="checklist"></ul>
-      <div id="l5-result" style="margin-top:14px;"></div>
     </div>
   `;
 
@@ -161,7 +158,7 @@ export function mount(container, api) {
 
     // arrow marker def
     const defs = document.createElementNS(SVG_NS, 'defs');
-    defs.innerHTML = `<marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#7c5cff"/></marker>`;
+    defs.innerHTML = `<marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#3d5058"/></marker>`;
     svg.appendChild(defs);
 
     // nodes
@@ -171,9 +168,9 @@ export function mount(container, api) {
       g.setAttribute('transform', `translate(${node.x},${node.y})`);
       const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('r', 26);
-      circle.setAttribute('fill', node.kind === 'class' ? '#233158' : '#1e2c4a');
-      circle.setAttribute('stroke', node.kind === 'class' ? '#7c5cff' : '#22d3ee');
-      if (node.id === connectFrom) circle.setAttribute('stroke', '#f472b6');
+      circle.setAttribute('fill', node.kind === 'class' ? '#132a28' : '#101f2c');
+      circle.setAttribute('stroke', node.kind === 'class' ? '#2ee6c8' : '#5b95ff');
+      if (node.id === connectFrom) circle.setAttribute('stroke', '#ffb454');
       if (node.id === selectedNodeId) circle.setAttribute('stroke-width', '4');
       const icon = document.createElementNS(SVG_NS, 'text');
       icon.setAttribute('text-anchor', 'middle');
@@ -264,28 +261,21 @@ export function mount(container, api) {
       { label: `Has at least one instance (found ${instanceCount})`, pass: hasInstance }
     ];
 
-    const checklistEl = container.querySelector('#checklist');
-    checklistEl.innerHTML = '';
-    checks.forEach(c => {
-      const li = document.createElement('li');
-      li.className = c.pass ? 'pass' : 'fail';
-      li.innerHTML = `<span class="cl-icon">${c.pass ? '✅' : '❌'}</span><span>${c.label}</span>`;
-      checklistEl.appendChild(li);
-    });
-
     const passCount = checks.filter(c => c.pass).length;
     const score = Math.round((passCount / checks.length) * 100);
-    container.querySelector('#l5-result').innerHTML = `
-      <div class="completion-banner">
-        <h3>${passCount === checks.length ? '🏆 Excellent Ontology!' : '✅ Level Complete'}</h3>
-        <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100 (${passCount}/${checks.length} best practices met)</p>
-        <p>Scenario: ${currentScenario.name}</p>
-      </div>
-    `;
-    animateCountTargets(container.querySelector('#l5-result'));
-    if (passCount === checks.length) api.badge('ontology-architect', 'Ontology Architect', '🏗️');
+
+    let badge = null;
+    if (passCount === checks.length) {
+      const added = api.badge('ontology-architect', 'Ontology Architect', '🏗️');
+      if (added) badge = { name: 'Ontology Architect', icon: '🏗️' };
+    }
     validatedOnce = true;
-    api.complete(score);
     if (currentScenario) saveSandbox(currentScenario.id, { nodes, edges });
+    api.complete(score, {
+      heading: passCount === checks.length ? '🏆 Excellent ontology!' : '✅ Level complete',
+      detail: `Scenario: ${currentScenario.name} · ${passCount}/${checks.length} best practices met.`,
+      badge,
+      checklist: checks
+    });
   });
 }

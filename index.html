@@ -6,6 +6,9 @@
 <title>Ontology Quest — Learn Knowledge Graphs &amp; Ontologies</title>
 <meta name="description" content="An interactive game that teaches ontologies, knowledge graphs, RDF/OWL, and GraphRAG through 5 playable levels." />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -40,7 +43,10 @@
             <li>🔍 Visualize multi-hop reasoning &amp; GraphRAG</li>
             <li>🏗️ Design your own ontology from scratch</li>
           </ul>
-          <button class="btn btn-primary btn-large" id="btn-start">Begin Quest →</button>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-large" id="btn-start">Begin Quest →</button>
+            <button class="btn btn-ghost btn-large" id="btn-intro">▶ What is an Ontology?</button>
+          </div>
           <p class="hero-note">No login. No install. Your progress is saved automatically in this browser.</p>
         </div>
       </section>
@@ -115,6 +121,26 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- INTRO WALKTHROUGH OVERLAY: animated "What is an Ontology?" explainer -->
+  <div class="intro-overlay" id="intro-overlay" hidden>
+    <div class="intro-stage">
+      <div class="intro-topline">
+        <span class="intro-eyebrow">// Ontology Quest — Primer</span>
+        <button class="intro-skip" id="intro-skip">Skip ✕</button>
+      </div>
+      <h3 class="intro-title" id="intro-title">What is an Ontology?</h3>
+      <p class="intro-caption" id="intro-caption"></p>
+      <div class="intro-visual" id="intro-visual"></div>
+      <div class="intro-controls">
+        <div class="intro-dots" id="intro-dots"></div>
+        <div class="intro-nav">
+          <button class="btn btn-ghost" id="intro-prev">← Back</button>
+          <button class="btn btn-primary" id="intro-next">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>

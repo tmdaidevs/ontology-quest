@@ -1,6 +1,7 @@
 // main.js — app shell: navigation, level map rendering, progress display, level mounting.
 import * as progress from './progress.js';
-import { animateCount } from './ui-utils.js';
+import { animateCount, animateCountTargets } from './ui-utils.js';
+import { openIntro, initIntro } from './intro.js';
 
 const TOTAL_LEVELS = 5;
 
@@ -48,6 +49,7 @@ document.querySelectorAll('[data-nav]').forEach(el => {
 });
 document.getElementById('btn-start').addEventListener('click', () => navTo('map'));
 document.getElementById('btn-map').addEventListener('click', () => navTo('map'));
+document.getElementById('btn-intro').addEventListener('click', () => openIntro());
 document.getElementById('btn-reset').addEventListener('click', () => {
   if (confirm('Reset all progress, scores, and badges? This cannot be undone.')) {
     progress.resetProgress();
@@ -106,55 +108,120 @@ function renderMap() {
 }
 
 const mountedLevels = new Set();
+const mountedModules = {}; // num -> imported level module (used by Replay to re-mount without re-importing)
+
+/** Builds the { complete, badge } API object handed to each level module's mount(). */
+function buildApi(num) {
+  return {
+    complete: (score, meta) => {
+      progress.completeLevel(num, score, TOTAL_LEVELS);
+      updateTopbar();
+      showToast(`Level ${num} complete! Score: ${Math.round(score)}/100`);
+      showResults(num, score, meta || {});
+    },
+    badge: (id, name, icon) => {
+      const added = progress.addBadge(id, name, icon);
+      if (added) showToast(`🏅 Badge earned: ${name}`);
+      updateTopbar();
+      return added;
+    }
+  };
+}
 
 async function openLevel(num) {
   const body = document.getElementById(`level-${num}-body`);
-  const nextBar = document.getElementById(`level-${num}-next`);
-  if (nextBar) { nextBar.hidden = true; nextBar.innerHTML = ''; }
+  const bar = document.getElementById(`level-${num}-next`);
   showScreen(`level-${num}`);
   if (!mountedLevels.has(num)) {
+    body.hidden = false;
+    bar.hidden = true;
+    bar.innerHTML = '';
     body.innerHTML = '<p style="color:var(--text-2)">Loading…</p>';
     try {
       const mod = await levelLoaders[num]();
       body.innerHTML = '';
-      mod.mount(body, {
-        complete: (score) => {
-          progress.completeLevel(num, score, TOTAL_LEVELS);
-          updateTopbar();
-          showToast(`Level ${num} complete! Score: ${Math.round(score)}/100`);
-          showNextBar(num);
-        },
-        badge: (id, name, icon) => {
-          const added = progress.addBadge(id, name, icon);
-          if (added) showToast(`🏅 Badge earned: ${name}`);
-          updateTopbar();
-        }
-      });
+      mod.mount(body, buildApi(num));
       mountedLevels.add(num);
+      mountedModules[num] = mod;
     } catch (err) {
       console.error('Failed to load level', num, err);
       body.innerHTML = `<p style="color:var(--danger)">Failed to load this level. Please refresh and try again.</p>`;
     }
   }
+  // If already mounted this session, leave body/bar state untouched — this naturally
+  // re-shows either the in-progress body (not yet completed) or the last results panel
+  // (already completed), whichever was left showing.
 }
 
-function showNextBar(num) {
+/** Re-mounts a level's module fresh into its body, for the results panel's "Replay" button. */
+function replay(num) {
+  const body = document.getElementById(`level-${num}-body`);
+  const bar = document.getElementById(`level-${num}-next`);
+  const mod = mountedModules[num];
+  if (!mod) return;
+  bar.hidden = true;
+  bar.innerHTML = '';
+  body.hidden = false;
+  body.innerHTML = '';
+  mod.mount(body, buildApi(num));
+}
+
+/**
+ * Renders the unified results panel after a level is completed: hides the interactive
+ * level body and shows only a score readout + optional badge/recap/checklist + actions
+ * (Replay, Start Next Level, Level Map) — per the "just show results" flow.
+ */
+function showResults(num, score, meta) {
+  const body = document.getElementById(`level-${num}-body`);
   const bar = document.getElementById(`level-${num}-next`);
   if (!bar) return;
+  body.hidden = true;
+
   const isLastGraded = num >= TOTAL_LEVELS;
   const nextMeta = levelMeta.find(m => m.num === num + 1);
+  const heading = meta.heading || 'Level complete';
+  const detail = meta.detail || '';
+
+  const badgeHtml = meta.badge
+    ? `<div class="results-badge-row"><span class="badge-chip badge-pop">${meta.badge.icon} ${meta.badge.name} earned!</span></div>`
+    : '';
+
+  const recapHtml = (meta.recap && meta.recap.length)
+    ? `<div class="results-recap">${meta.recap.map(r => `<div class="rc-item"><h4>${r.title}</h4><p>${r.body}</p></div>`).join('')}</div>`
+    : '';
+
+  const checklistHtml = (meta.checklist && meta.checklist.length)
+    ? `<ul class="results-checklist">${meta.checklist.map(c => `<li class="${c.pass ? 'pass' : 'fail'}"><span class="cl-icon">${c.pass ? '✅' : '❌'}</span><span>${c.label}</span></li>`).join('')}</ul>`
+    : '';
+
+  const primaryNextBtn = !isLastGraded && nextMeta
+    ? `<button class="btn btn-primary" id="btn-goto-next">Start: ${nextMeta.title} →</button>`
+    : (num !== 6 ? `<button class="btn btn-primary" id="btn-goto-bonus">🌐 Try the Live Explorer →</button>` : '');
+
   bar.hidden = false;
   bar.classList.remove('pop-in');
   bar.innerHTML = `
-    <div class="next-bar-inner">
-      <span class="next-bar-msg">🎉 Level ${num} complete!</span>
-      <div class="next-bar-actions">
-        ${!isLastGraded && nextMeta ? `<button class="btn btn-primary" id="btn-goto-next">Next: ${nextMeta.title} →</button>` : `<button class="btn btn-primary" id="btn-goto-bonus">🌐 Try the Live Explorer →</button>`}
+    <div class="results-panel">
+      <span class="tag-label">// Level ${num} — Results</span>
+      <div class="results-score-row">
+        <div>
+          <h3>${heading}</h3>
+          <p class="results-detail">${detail}</p>
+        </div>
+        <div class="results-score"><span class="count-target" data-target="${Math.max(0, Math.min(100, Math.round(score)))}">0</span><span class="results-score-max">/100</span></div>
+      </div>
+      ${badgeHtml}
+      ${recapHtml}
+      ${checklistHtml}
+      <div class="results-actions">
+        <button class="btn btn-ghost" id="btn-replay">↺ Replay Level</button>
+        ${primaryNextBtn}
         <button class="btn btn-ghost" id="btn-goto-map">🗺️ Level Map</button>
       </div>
     </div>
   `;
-  // Force reflow so the animation class re-triggers even if the bar was already shown before.
+  animateCountTargets(bar);
+  // Force reflow so the pop-in animation class re-triggers even if the bar was already shown before.
   void bar.offsetWidth;
   bar.classList.add('pop-in');
 
@@ -162,6 +229,7 @@ function showNextBar(num) {
   if (nextBtn) nextBtn.addEventListener('click', () => openLevel(num + 1));
   const bonusBtn = bar.querySelector('#btn-goto-bonus');
   if (bonusBtn) bonusBtn.addEventListener('click', () => openLevel(6));
+  bar.querySelector('#btn-replay').addEventListener('click', () => replay(num));
   bar.querySelector('#btn-goto-map').addEventListener('click', () => navTo('map'));
   bar.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
@@ -180,3 +248,4 @@ function showToast(msg) {
 // Initial boot.
 lastKnownScore = progress.totalScore();
 updateTopbar();
+initIntro({ onFinish: () => navTo('map') });

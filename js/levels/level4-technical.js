@@ -1,7 +1,6 @@
 // level4-technical.js — Animated multi-hop graph traversal + guided UI mockup walkthrough.
 import { renderGraph, setHighlight, clearHighlight } from '../graph-svg.js';
 import { orgGraph, singleHopQuery, multiHopQuery } from '../data/reasoning-graph.js';
-import { animateCountTargets } from '../ui-utils.js';
 
 export function mount(container, api) {
   let singleHopViewed = false;
@@ -83,7 +82,6 @@ export function mount(container, api) {
         <div class="hint-box" id="l4-hint-box" hidden></div>
         <div class="quiz-options" id="l4-quiz-opts"></div>
       </div>
-      <div id="l4-result"></div>
     </div>
   `;
 
@@ -205,17 +203,16 @@ export function mount(container, api) {
         if (!correct) optsEl.children[answerIdx].classList.add('correct');
         const base = correct ? 100 : 75;
         const score = Math.max(0, base - (hintUsed ? 5 : 0));
-        const resultEl = container.querySelector('#l4-result');
-        resultEl.innerHTML = `
-          <div class="completion-banner">
-            <h3>${correct && !hintUsed ? '🎉 Correct!' : '✅ Level Complete'}</h3>
-            <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100</p>
-            <p>You've seen how single-hop lookups differ from multi-hop graph reasoning, and how GraphRAG blends symbolic and vector retrieval.</p>
-          </div>
-        `;
-        animateCountTargets(resultEl);
-        if (correct) api.badge('graph-navigator', 'Graph Navigator', '🧭');
-        api.complete(score);
+        let badge = null;
+        if (correct) {
+          const added = api.badge('graph-navigator', 'Graph Navigator', '🧭');
+          if (added) badge = { name: 'Graph Navigator', icon: '🧭' };
+        }
+        api.complete(score, {
+          heading: correct && !hintUsed ? '🎉 Correct!' : '✅ Level complete',
+          detail: `You've seen how single-hop lookups differ from multi-hop graph reasoning, and how GraphRAG blends symbolic and vector retrieval.`,
+          badge
+        });
       });
       optsEl.appendChild(btn);
     });
