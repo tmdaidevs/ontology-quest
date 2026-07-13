@@ -296,14 +296,12 @@ body::after {
 }
 .level-card h3 { margin: 8px 0 8px; font-size: 1.15rem; font-family: var(--font-sans); text-transform: none; letter-spacing: 0; }
 .level-card p { color: var(--text-1); font-size: 0.9rem; margin: 0 0 12px; min-height: 40px; }
-.level-card .lv-icon { font-size: 1.9rem; margin-bottom: 6px; display: block; }
 .level-card .lv-status {
   display: flex; align-items: center; justify-content: space-between;
   font-family: var(--font-mono);
   font-size: 0.78rem; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.04em;
 }
 .level-card .lv-score { color: var(--success); font-weight: 700; }
-.lock-icon { font-size: 1.4rem; }
 
 .badge-shelf {
   margin-top: 34px;
@@ -765,6 +763,78 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 }
 .live-empty { color: var(--text-2); text-align: center; padding: 24px; }
 .live-error { color: var(--danger); background: rgba(255,92,92,0.08); border: 1px solid var(--danger); border-radius: var(--radius-sm); padding: 12px 14px; }
+
+/* ---------------- Level 7: Algorithms Visualized ---------------- */
+.algo-tabs { display: flex; gap: 8px; margin: 14px 0; }
+.algo-tab {
+  background: var(--bg-2); border: 1px solid var(--border); color: var(--text-1);
+  padding: 8px 16px; border-radius: var(--radius-sm); font-family: var(--font-mono);
+  font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer;
+  transition: all 0.15s ease;
+}
+.algo-tab:hover { border-color: var(--accent); color: var(--text-0); }
+.algo-tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+
+.traversal-readout { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.tr-row { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.tr-label {
+  font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-2); min-width: 80px; padding-top: 4px;
+}
+.tr-values { font-family: var(--font-mono); font-size: 0.88rem; color: var(--accent-2); }
+.visit-trail { display: flex; flex-wrap: wrap; gap: 6px; }
+.visit-chip {
+  background: var(--bg-2); border: 1px solid var(--accent); color: var(--text-0);
+  padding: 4px 10px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.78rem;
+}
+@keyframes visitPop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.visit-pop { animation: visitPop 0.25s ease; }
+
+/* Embedding vector-space scatter plot */
+.vec-wrap { background: var(--bg-2); }
+.vector-svg { width: 100%; height: auto; display: block; }
+.vec-point circle { fill: var(--bg-3); stroke: var(--border-bright); stroke-width: 1.5; transition: all 0.3s ease; }
+.vec-point text { fill: var(--text-1); font-size: 11px; font-family: var(--font-mono); text-anchor: middle; }
+.vec-point.vec-mammal circle { stroke: var(--accent-2); }
+.vec-point.vec-bird circle { stroke: var(--accent-3); }
+.vec-point.vec-vehicle circle { stroke: #b478ff; }
+.vec-point.vec-query circle { fill: var(--accent); stroke: var(--accent); filter: drop-shadow(0 0 6px rgba(46,230,200,0.7)); }
+.vec-point.vec-query text { fill: var(--accent); font-weight: 700; }
+.vec-point.highlight circle { fill: var(--accent-2); stroke: var(--accent-2); filter: drop-shadow(0 0 8px rgba(255,180,84,0.8)); }
+.vec-point.highlight text { fill: var(--text-0); font-weight: 700; }
+.vec-point.dim { opacity: 0.25; }
+.vec-search-circle {
+  fill: rgba(46,230,200,0.06); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 5 4; opacity: 0;
+}
+.vec-search-circle.active { opacity: 1; }
+.vec-sim-line { stroke: var(--accent-2); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0; animation: simLineIn 0.4s ease forwards; }
+@keyframes simLineIn { to { opacity: 0.8; } }
+.vec-results { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.vec-result-row {
+  display: flex; justify-content: space-between; background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 14px; font-family: var(--font-mono); font-size: 0.85rem;
+}
+.vec-sim-score { color: var(--accent-2); font-weight: 700; }
+
+/* Hybrid GraphRAG pipeline diagram */
+.pipeline { display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap; margin: 16px 0; }
+.pipeline-stage {
+  flex: 1; min-width: 118px;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 14px 10px; text-align: center; transition: all 0.25s ease;
+}
+.pipeline-stage .ps-icon {
+  font-family: var(--font-mono); font-size: 1.3rem; color: var(--text-2); margin-bottom: 6px; transition: color 0.25s ease;
+}
+.pipeline-stage .ps-label { font-size: 0.78rem; color: var(--text-1); line-height: 1.4; }
+.pipeline-stage .ps-label small { color: var(--text-2); }
+.pipeline-stage.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 16px rgba(46,230,200,0.25); }
+.pipeline-stage.active .ps-icon { color: var(--accent); animation: nodePulse 1.1s ease-in-out infinite; }
+.pipeline-stage.active .ps-label { color: var(--text-0); }
+.pipeline-stage.done { border-color: var(--border-bright); opacity: 0.7; }
+.pipeline-stage.done .ps-icon { color: var(--success); }
+.pipeline-arrow { display: flex; align-items: center; color: var(--text-2); font-size: 1.1rem; }
+.pipeline-caption { color: var(--text-1); min-height: 44px; }
 
 /* ==========================================================================
    Intro Walkthrough: animated "What is an Ontology?" overlay

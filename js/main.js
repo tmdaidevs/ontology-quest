@@ -11,7 +11,8 @@ const levelMeta = [
   { num: 3, id: 'level-3', title: 'Tools & Standards', desc: 'RDF, OWL, SPARQL, Neo4j, Wikidata & more.' },
   { num: 4, id: 'level-4', title: 'Multi-Hop Reasoning', desc: 'How graphs are queried, traversed & reasoned over.' },
   { num: 5, id: 'level-5', title: 'Build Your Own Ontology', desc: 'Design a knowledge graph in a sandbox.' },
-  { num: 6, id: 'level-6', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true }
+  { num: 6, id: 'level-6', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true },
+  { num: 7, id: 'level-7', title: 'Algorithms Visualized', desc: 'Watch BFS, DFS, embedding search & GraphRAG animated step-by-step.', bonus: true }
 ];
 
 // Lazily import level modules only when needed to keep initial load light.
@@ -21,14 +22,15 @@ const levelLoaders = {
   3: () => import('./levels/level3-solutions.js'),
   4: () => import('./levels/level4-technical.js'),
   5: () => import('./levels/level5-sandbox.js'),
-  6: () => import('./levels/level6-live.js')
+  6: () => import('./levels/level6-live.js'),
+  7: () => import('./levels/level7-algorithms.js')
 };
 
 const screens = {
   landing: document.getElementById('screen-landing'),
   map: document.getElementById('screen-map')
 };
-for (let i = 1; i <= 6; i++) {
+for (let i = 1; i <= 7; i++) {
   screens[`level-${i}`] = document.getElementById(`screen-level-${i}`);
 }
 
@@ -177,7 +179,7 @@ function showResults(num, score, meta) {
   body.hidden = true;
 
   const isLastGraded = num >= TOTAL_LEVELS;
-  const nextMeta = levelMeta.find(m => m.num === num + 1);
+  const nextMeta = levelMeta.find(m => m.num === num + 1 && !m.bonus);
   const heading = meta.heading || 'Level complete';
   const detail = meta.detail || '';
 
@@ -193,9 +195,18 @@ function showResults(num, score, meta) {
     ? `<ul class="results-checklist">${meta.checklist.map(c => `<li class="${c.pass ? 'pass' : 'fail'}"><span class="cl-icon">${c.pass ? '✅' : '❌'}</span><span>${c.label}</span></li>`).join('')}</ul>`
     : '';
 
-  const primaryNextBtn = !isLastGraded && nextMeta
-    ? `<button class="btn btn-primary" id="btn-goto-next">Start: ${nextMeta.title} →</button>`
-    : (num !== 6 ? `<button class="btn btn-primary" id="btn-goto-bonus">🌐 Try the Live Explorer →</button>` : '');
+  // Next-step button(s): a core level offers the next core level; finishing the
+  // last graded level (5) offers both bonus levels as optional side quests;
+  // finishing a bonus level itself offers no forced next step.
+  let nextButtonsHtml = '';
+  if (!isLastGraded && nextMeta) {
+    nextButtonsHtml = `<button class="btn btn-primary" id="btn-goto-next">Start: ${nextMeta.title} →</button>`;
+  } else if (num === TOTAL_LEVELS) {
+    nextButtonsHtml = levelMeta
+      .filter(m => m.bonus)
+      .map(b => `<button class="btn btn-primary" data-bonus-num="${b.num}">Try: ${b.title} →</button>`)
+      .join('');
+  }
 
   bar.hidden = false;
   bar.classList.remove('pop-in');
@@ -214,7 +225,7 @@ function showResults(num, score, meta) {
       ${checklistHtml}
       <div class="results-actions">
         <button class="btn btn-ghost" id="btn-replay">↺ Replay Level</button>
-        ${primaryNextBtn}
+        ${nextButtonsHtml}
         <button class="btn btn-ghost" id="btn-goto-map">🗺️ Level Map</button>
       </div>
     </div>
@@ -226,8 +237,8 @@ function showResults(num, score, meta) {
 
   const nextBtn = bar.querySelector('#btn-goto-next');
   if (nextBtn) nextBtn.addEventListener('click', () => openLevel(num + 1));
-  const bonusBtn = bar.querySelector('#btn-goto-bonus');
-  if (bonusBtn) bonusBtn.addEventListener('click', () => openLevel(6));
+  const bonusBtns = bar.querySelectorAll('[data-bonus-num]');
+  bonusBtns.forEach(btn => btn.addEventListener('click', () => openLevel(Number(btn.dataset.bonusNum))));
   bar.querySelector('#btn-replay').addEventListener('click', () => replay(num));
   bar.querySelector('#btn-goto-map').addEventListener('click', () => navTo('map'));
   bar.scrollIntoView({ behavior: 'smooth', block: 'end' });
