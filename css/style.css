@@ -425,6 +425,7 @@ body::after {
 .accordion-item.open .accordion-body { padding: 0 16px 14px; max-height: 400px; }
 .accordion-item.open .chev { transform: rotate(180deg); color: var(--accent); }
 .chev { transition: transform 0.25s ease; }
+.accordion-item.algo-item.open .accordion-body { max-height: 720px; }
 
 /* Triple builder (Level 2) */
 .triple-builder { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
@@ -881,6 +882,91 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 .cs-tag {
   background: var(--bg-2); border: 1px solid var(--border); color: var(--text-1);
   padding: 4px 10px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.76rem;
+}
+
+/* ---------------- Level 4: mini algorithm animations (accordion cards) ----------------
+   Pure CSS `animation: ... infinite` loops — no JS timers, so they carry zero risk of
+   leaking across "Replay Level" remounts, and automatically pause once the parent
+   `.screen` is set to display:none by navigation (browsers suspend CSS animations on
+   display:none subtrees), so no manual start/stop lifecycle is needed. */
+.mini-viz { margin-top: 14px; }
+.mv-caption { margin-top: 8px; color: var(--text-2); font-size: 0.8rem; text-align: center; }
+.mv-svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+/* BFS vs. DFS side-by-side traversal loop */
+.mini-traverse-compare { display: flex; gap: 16px; }
+.mv-panel { flex: 1; min-width: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+.mv-panel.mv-bfs { --mv-color: var(--accent); }
+.mv-panel.mv-dfs { --mv-color: var(--accent-2); }
+.mv-panel-label { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-1); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.mv-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.mv-dot.bfs { background: var(--accent); }
+.mv-dot.dfs { background: var(--accent-2); }
+.mv-edge { stroke: var(--border-bright); stroke-width: 1.5; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0.3; animation: mvEdgeDraw 6s ease-in-out infinite; animation-delay: var(--d); }
+.mv-node { fill: var(--bg-3); stroke: var(--border-bright); stroke-width: 1.5; animation: mvNodeLight 6s ease-in-out infinite; animation-delay: var(--d); transform-box: fill-box; transform-origin: center; }
+@keyframes mvNodeLight {
+  0% { fill: var(--bg-3); stroke: var(--border-bright); transform: scale(1); }
+  4% { fill: var(--mv-color); stroke: var(--mv-color); transform: scale(1.25); }
+  12% { transform: scale(1); }
+  84% { fill: var(--mv-color); stroke: var(--mv-color); transform: scale(1); }
+  96%, 100% { fill: var(--bg-3); stroke: var(--border-bright); transform: scale(1); }
+}
+@keyframes mvEdgeDraw {
+  0% { stroke-dashoffset: 100; opacity: 0.3; stroke: var(--border-bright); }
+  6% { stroke-dashoffset: 0; opacity: 1; stroke: var(--mv-color); }
+  84% { stroke-dashoffset: 0; opacity: 1; stroke: var(--mv-color); }
+  96%, 100% { stroke-dashoffset: 100; opacity: 0.3; stroke: var(--border-bright); }
+}
+
+/* Embedding-space "radar ping" nearest-neighbor loop */
+.mini-vector-radar { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+.radar-dot.dim { fill: var(--text-2); opacity: 0.35; }
+.radar-query { fill: var(--accent-3); animation: radarQueryPulse 1.6s ease-in-out infinite; }
+@keyframes radarQueryPulse { 0%, 100% { r: 7; opacity: 1; } 50% { r: 9; opacity: 0.75; } }
+.radar-ring { fill: none; stroke: var(--accent-3); stroke-width: 2; opacity: 0; animation: radarPing 3s ease-out infinite; animation-delay: var(--rd); }
+@keyframes radarPing { 0% { r: 0; opacity: 0.65; } 70% { opacity: 0.12; } 100% { r: 130; opacity: 0; } }
+.radar-dot.neighbor { fill: var(--bg-3); stroke: var(--border-bright); stroke-width: 1.5; animation: radarNeighborLight 3s ease-out infinite; animation-delay: var(--d); }
+@keyframes radarNeighborLight {
+  0% { fill: var(--bg-3); stroke: var(--border-bright); }
+  6% { fill: var(--accent); stroke: var(--accent); }
+  75% { fill: var(--accent); stroke: var(--accent); }
+  90%, 100% { fill: var(--bg-3); stroke: var(--border-bright); }
+}
+.radar-line { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 140; stroke-dashoffset: 140; opacity: 0; animation: radarLineDraw 3s ease-out infinite; animation-delay: var(--d); }
+@keyframes radarLineDraw {
+  0% { stroke-dashoffset: 140; opacity: 0; }
+  8% { stroke-dashoffset: 0; opacity: 0.85; }
+  75% { stroke-dashoffset: 0; opacity: 0.85; }
+  90%, 100% { stroke-dashoffset: 140; opacity: 0; }
+}
+
+/* GraphRAG pipeline "light chase" loop */
+.mini-pipeline-flow { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 12px 10px; }
+.pf-track { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 0 5px; height: 40px; }
+.pf-track::before { content: ''; position: absolute; left: 20px; right: 20px; top: 50%; height: 2px; background: var(--border); transform: translateY(-50%); }
+.pf-node {
+  position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-3); border: 1px solid var(--border-bright); color: var(--text-1);
+  display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-family: var(--font-mono);
+  animation: pfNodeFlash 4s ease-in-out infinite; animation-delay: var(--d);
+}
+@keyframes pfNodeFlash {
+  0% { background: var(--bg-3); border-color: var(--border-bright); color: var(--text-1); transform: scale(1); }
+  4% { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); transform: scale(1.18); }
+  16% { background: var(--bg-2); border-color: var(--border-bright); color: var(--text-1); transform: scale(1); }
+  100% { background: var(--bg-3); border-color: var(--border-bright); color: var(--text-1); }
+}
+.pf-dot {
+  position: absolute; top: 50%; left: 20px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 8px 2px var(--accent-soft); transform: translate(-50%, -50%);
+  animation: pfDotMove 4s linear infinite;
+}
+@keyframes pfDotMove { 0% { left: 20px; } 100% { left: calc(100% - 20px); } }
+
+@media (max-width: 640px) {
+  .mini-traverse-compare { flex-direction: column; }
+  /* Stacked BFS/DFS panels take more vertical room on narrow screens. */
+  .accordion-item.algo-item.open .accordion-body { max-height: 900px; }
 }
 
 /* ==========================================================================

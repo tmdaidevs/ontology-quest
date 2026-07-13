@@ -130,16 +130,91 @@ export function mount(container, api) {
   });
 
   // --- Algorithm explainer accordion ---
+  // Each card pairs its explainer paragraph with a small, auto-looping, pure-CSS
+  // animation (no JS timers — safe to leave running indefinitely and immune to
+  // leaks across "Replay Level" remounts) that visually echoes the concept.
+  const bfsDfsViz = `
+    <div class="mini-viz mini-traverse-compare" aria-hidden="true">
+      <div class="mv-panel mv-bfs">
+        <div class="mv-panel-label"><span class="mv-dot bfs"></span>BFS — level by level</div>
+        <svg viewBox="0 0 220 150" class="mv-svg">
+          <line x1="110" y1="20" x2="60" y2="75" class="mv-edge" style="--d:0.4s"/>
+          <line x1="110" y1="20" x2="160" y2="75" class="mv-edge" style="--d:0.4s"/>
+          <line x1="60" y1="75" x2="30" y2="128" class="mv-edge" style="--d:0.8s"/>
+          <line x1="60" y1="75" x2="90" y2="128" class="mv-edge" style="--d:0.8s"/>
+          <line x1="160" y1="75" x2="130" y2="128" class="mv-edge" style="--d:0.8s"/>
+          <line x1="160" y1="75" x2="190" y2="128" class="mv-edge" style="--d:0.8s"/>
+          <circle cx="110" cy="20" r="11" class="mv-node" style="--d:0s"/>
+          <circle cx="60" cy="75" r="10" class="mv-node" style="--d:0.4s"/>
+          <circle cx="160" cy="75" r="10" class="mv-node" style="--d:0.4s"/>
+          <circle cx="30" cy="128" r="9" class="mv-node" style="--d:0.8s"/>
+          <circle cx="90" cy="128" r="9" class="mv-node" style="--d:0.8s"/>
+          <circle cx="130" cy="128" r="9" class="mv-node" style="--d:0.8s"/>
+          <circle cx="190" cy="128" r="9" class="mv-node" style="--d:0.8s"/>
+        </svg>
+      </div>
+      <div class="mv-panel mv-dfs">
+        <div class="mv-panel-label"><span class="mv-dot dfs"></span>DFS — dive deep first</div>
+        <svg viewBox="0 0 220 150" class="mv-svg">
+          <line x1="110" y1="20" x2="60" y2="75" class="mv-edge" style="--d:0.4s"/>
+          <line x1="60" y1="75" x2="30" y2="128" class="mv-edge" style="--d:0.8s"/>
+          <line x1="60" y1="75" x2="90" y2="128" class="mv-edge" style="--d:1.2s"/>
+          <line x1="110" y1="20" x2="160" y2="75" class="mv-edge" style="--d:1.6s"/>
+          <line x1="160" y1="75" x2="130" y2="128" class="mv-edge" style="--d:2.0s"/>
+          <line x1="160" y1="75" x2="190" y2="128" class="mv-edge" style="--d:2.4s"/>
+          <circle cx="110" cy="20" r="11" class="mv-node" style="--d:0s"/>
+          <circle cx="60" cy="75" r="10" class="mv-node" style="--d:0.4s"/>
+          <circle cx="30" cy="128" r="9" class="mv-node" style="--d:0.8s"/>
+          <circle cx="90" cy="128" r="9" class="mv-node" style="--d:1.2s"/>
+          <circle cx="160" cy="75" r="10" class="mv-node" style="--d:1.6s"/>
+          <circle cx="130" cy="128" r="9" class="mv-node" style="--d:2.0s"/>
+          <circle cx="190" cy="128" r="9" class="mv-node" style="--d:2.4s"/>
+        </svg>
+      </div>
+    </div>`;
+  const embeddingViz = `
+    <div class="mini-viz mini-vector-radar" aria-hidden="true">
+      <svg viewBox="0 0 320 170" class="mv-svg radar-svg">
+        <circle cx="40" cy="30" r="5" class="radar-dot dim"/>
+        <circle cx="270" cy="35" r="5" class="radar-dot dim"/>
+        <circle cx="255" cy="140" r="5" class="radar-dot dim"/>
+        <circle cx="35" cy="135" r="5" class="radar-dot dim"/>
+        <circle cx="225" cy="115" r="5" class="radar-dot dim"/>
+        <circle cx="55" cy="105" r="5" class="radar-dot dim"/>
+        <line x1="150" y1="85" x2="95" y2="55" class="radar-line" style="--d:0.9s"/>
+        <line x1="150" y1="85" x2="100" y2="120" class="radar-line" style="--d:1.1s"/>
+        <line x1="150" y1="85" x2="185" y2="58" class="radar-line" style="--d:0.85s"/>
+        <circle cx="95" cy="55" r="6" class="radar-dot neighbor" style="--d:0.9s"/>
+        <circle cx="100" cy="120" r="6" class="radar-dot neighbor" style="--d:1.1s"/>
+        <circle cx="185" cy="58" r="6" class="radar-dot neighbor" style="--d:0.85s"/>
+        <circle cx="150" cy="85" r="0" class="radar-ring" style="--rd:0s"/>
+        <circle cx="150" cy="85" r="0" class="radar-ring" style="--rd:1.5s"/>
+        <circle cx="150" cy="85" r="7" class="radar-query"/>
+      </svg>
+      <div class="mv-caption">A similarity "ping" radiates from the query — nearest neighbors light up with no explicit graph edge required.</div>
+    </div>`;
+  const pipelineViz = `
+    <div class="mini-viz mini-pipeline-flow" aria-hidden="true">
+      <div class="pf-track">
+        <div class="pf-node" style="--d:0.0s">?</div>
+        <div class="pf-node" style="--d:0.8s">≈</div>
+        <div class="pf-node" style="--d:1.6s">⇄</div>
+        <div class="pf-node" style="--d:2.4s">▤</div>
+        <div class="pf-node" style="--d:3.2s">▣</div>
+        <div class="pf-dot"></div>
+      </div>
+      <div class="mv-caption">One query flowing through: seed via vectors → expand via graph → assemble → grounded answer.</div>
+    </div>`;
   const algoItems = [
-    { title: 'Graph Traversal: BFS & DFS', body: 'To find multi-hop answers, engines walk the graph using Breadth-First Search (explore all neighbors at the current depth before going deeper — great for "shortest path" / nearest connections) or Depth-First Search (follow one path as far as possible before backtracking). Most graph query engines use BFS-style traversal bounded by a max hop count for performance.' },
-    { title: 'Embedding-Based Similarity Search', body: 'Not all "hops" are explicit graph edges. Modern systems also compute vector embeddings for nodes and text, allowing "approximate hops" via nearest-neighbor similarity search — useful when relationships are implicit or the graph is incomplete.' },
-    { title: 'Hybrid Symbolic + Vector Retrieval (GraphRAG)', body: 'GraphRAG combines symbolic graph traversal (precise, explainable, rule-based) with vector similarity search (fuzzy, semantic) — first identifying relevant entities via embeddings, then traversing the graph from those entities to gather multi-hop connected context, which is fed into the LLM prompt for a grounded answer.' }
+    { title: 'Graph Traversal: BFS & DFS', body: 'To find multi-hop answers, engines walk the graph using Breadth-First Search (explore all neighbors at the current depth before going deeper — great for "shortest path" / nearest connections) or Depth-First Search (follow one path as far as possible before backtracking). Most graph query engines use BFS-style traversal bounded by a max hop count for performance.', viz: bfsDfsViz },
+    { title: 'Embedding-Based Similarity Search', body: 'Not all "hops" are explicit graph edges. Modern systems also compute vector embeddings for nodes and text, allowing "approximate hops" via nearest-neighbor similarity search — useful when relationships are implicit or the graph is incomplete.', viz: embeddingViz },
+    { title: 'Hybrid Symbolic + Vector Retrieval (GraphRAG)', body: 'GraphRAG combines symbolic graph traversal (precise, explainable, rule-based) with vector similarity search (fuzzy, semantic) — first identifying relevant entities via embeddings, then traversing the graph from those entities to gather multi-hop connected context, which is fed into the LLM prompt for a grounded answer.', viz: pipelineViz }
   ];
   const algoAccordion = container.querySelector('#algo-accordion');
   algoItems.forEach(it => {
     const item = document.createElement('div');
-    item.className = 'accordion-item';
-    item.innerHTML = `<div class="accordion-head"><span>${it.title}</span><span class="chev">▾</span></div><div class="accordion-body"><p>${it.body}</p></div>`;
+    item.className = 'accordion-item algo-item';
+    item.innerHTML = `<div class="accordion-head"><span>${it.title}</span><span class="chev">▾</span></div><div class="accordion-body"><p>${it.body}</p>${it.viz}</div>`;
     item.querySelector('.accordion-head').addEventListener('click', () => item.classList.toggle('open'));
     algoAccordion.appendChild(item);
   });
