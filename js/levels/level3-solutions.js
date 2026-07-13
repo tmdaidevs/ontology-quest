@@ -1,5 +1,6 @@
 // level3-solutions.js — Match tool/standard to its best-fit use case, then show explainer cards.
 import { toolPairs } from '../data/tools.js';
+import { animateCountTargets } from '../ui-utils.js';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -103,9 +104,10 @@ export function mount(container, api) {
     container.querySelector('#level3-result').innerHTML = `
       <div class="completion-banner">
         <h3>${mistakes === 0 ? '🏆 Flawless Match!' : '✅ Level Complete'}</h3>
-        <p class="score-line">Score: ${score} / 100 (${mistakes} mistake${mistakes === 1 ? '' : 's'})</p>
+        <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100 (${mistakes} mistake${mistakes === 1 ? '' : 's'})</p>
       </div>
     `;
+    animateCountTargets(container.querySelector('#level3-result'));
     if (mistakes === 0) api.badge('perfect-matcher', 'Perfect Matcher', '🎯');
     api.complete(score);
     explCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

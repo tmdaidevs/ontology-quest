@@ -1,5 +1,6 @@
 // level2-concepts.js — Core concepts accordion + drag/connect triple-builder mini-game.
 import { conceptSections, builderNodes, builderPredicates, acceptedTriples, knownWrongTriples } from '../data/concepts.js';
+import { animateCountTargets } from '../ui-utils.js';
 
 export function mount(container, api) {
   let sectionsOpened = new Set();
@@ -143,11 +144,12 @@ export function mount(container, api) {
     resultEl.innerHTML = `
       <div class="completion-banner">
         <h3>${hasHierarchy ? '✅ Nice ontology!' : '⚠️ Almost there'}</h3>
-        <p class="score-line">Score: ${score} / 100</p>
+        <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100</p>
         <p>${hasHierarchy ? 'You included a hierarchy relationship (isA/subClassOf) — exactly what taxonomies are built from.' : 'Tip: try adding an isA or subClassOf triple to form a class hierarchy.'}</p>
         <p>Concepts explored: ${sectionsOpened.size}/${conceptSections.length} · Valid-looking triples: ${triples.filter(t => t.valid).length}/${triples.length}</p>
       </div>
     `;
+    animateCountTargets(resultEl);
     if (hasHierarchy && sectionsOpened.size === conceptSections.length) {
       api.badge('triple-builder', 'Triple Builder', '🧩');
     }

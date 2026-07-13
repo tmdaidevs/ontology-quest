@@ -1,6 +1,7 @@
 // level4-technical.js — Animated multi-hop graph traversal + guided UI mockup walkthrough.
 import { renderGraph, setHighlight, clearHighlight } from '../graph-svg.js';
 import { orgGraph, singleHopQuery, multiHopQuery } from '../data/reasoning-graph.js';
+import { animateCountTargets } from '../ui-utils.js';
 
 export function mount(container, api) {
   let singleHopViewed = false;
@@ -75,7 +76,11 @@ export function mount(container, api) {
     <div class="card" id="l4-quiz" hidden>
       <h3>Quick Check</h3>
       <div class="quiz-q">
-        <p class="qtext">Which retrieval approach lets an LLM gather connected, multi-hop context from a knowledge graph instead of relying only on document similarity search?</p>
+        <div class="qtext-row">
+          <p class="qtext">Which retrieval approach lets an LLM gather connected, multi-hop context from a knowledge graph instead of relying only on document similarity search?</p>
+          <button class="hint-btn" id="l4-hint-btn">💡 Hint</button>
+        </div>
+        <div class="hint-box" id="l4-hint-box" hidden></div>
         <div class="quiz-options" id="l4-quiz-opts"></div>
       </div>
       <div id="l4-result"></div>
@@ -177,6 +182,15 @@ export function mount(container, api) {
     const opts = ['Plain keyword search', 'GraphRAG (hybrid graph traversal + vector retrieval)', 'Random sampling', 'CSS selectors'];
     const answerIdx = 1;
     const optsEl = container.querySelector('#l4-quiz-opts');
+    let hintUsed = false;
+    const hintBtn = container.querySelector('#l4-hint-btn');
+    const hintBox = container.querySelector('#l4-hint-box');
+    hintBtn.addEventListener('click', () => {
+      hintBox.hidden = false;
+      hintBox.textContent = '💡 It\'s the same term you saw on the History timeline — a hybrid of "Retrieval-Augmented Generation" and graph traversal.';
+      hintBtn.disabled = true;
+      hintUsed = true;
+    });
     opts.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.className = 'quiz-opt';
@@ -184,18 +198,22 @@ export function mount(container, api) {
       btn.addEventListener('click', () => {
         if (quizAnswered) return;
         quizAnswered = true;
+        hintBtn.disabled = true;
         const correct = i === answerIdx;
         btn.classList.add(correct ? 'correct' : 'wrong');
         [...optsEl.children].forEach(c => c.classList.add('disabled'));
         if (!correct) optsEl.children[answerIdx].classList.add('correct');
-        const score = correct ? 100 : 75;
-        container.querySelector('#l4-result').innerHTML = `
+        const base = correct ? 100 : 75;
+        const score = Math.max(0, base - (hintUsed ? 5 : 0));
+        const resultEl = container.querySelector('#l4-result');
+        resultEl.innerHTML = `
           <div class="completion-banner">
-            <h3>${correct ? '🎉 Correct!' : '✅ Level Complete'}</h3>
-            <p class="score-line">Score: ${score} / 100</p>
+            <h3>${correct && !hintUsed ? '🎉 Correct!' : '✅ Level Complete'}</h3>
+            <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100</p>
             <p>You've seen how single-hop lookups differ from multi-hop graph reasoning, and how GraphRAG blends symbolic and vector retrieval.</p>
           </div>
         `;
+        animateCountTargets(resultEl);
         if (correct) api.badge('graph-navigator', 'Graph Navigator', '🧭');
         api.complete(score);
       });

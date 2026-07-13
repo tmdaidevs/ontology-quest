@@ -1,6 +1,7 @@
 // level5-sandbox.js — Build-your-own ontology sandbox: node-link editor + validation checklist.
 import { scenarios } from '../data/scenarios.js';
 import { saveSandbox, loadSandbox } from '../progress.js';
+import { animateCountTargets } from '../ui-utils.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const HIERARCHY_LABELS = ['isa', 'subclassof', 'kindof', 'typeof'];
@@ -277,10 +278,11 @@ export function mount(container, api) {
     container.querySelector('#l5-result').innerHTML = `
       <div class="completion-banner">
         <h3>${passCount === checks.length ? '🏆 Excellent Ontology!' : '✅ Level Complete'}</h3>
-        <p class="score-line">Score: ${score} / 100 (${passCount}/${checks.length} best practices met)</p>
+        <p class="score-line">Score: <span class="count-target" data-target="${score}">0</span> / 100 (${passCount}/${checks.length} best practices met)</p>
         <p>Scenario: ${currentScenario.name}</p>
       </div>
     `;
+    animateCountTargets(container.querySelector('#l5-result'));
     if (passCount === checks.length) api.badge('ontology-architect', 'Ontology Architect', '🏗️');
     validatedOnce = true;
     api.complete(score);

@@ -37,21 +37,25 @@ export const historyQuiz = [
   {
     q: 'Who is credited with an early philosophical precursor to ontologies through his system of categories?',
     options: ['Isaac Newton', 'Aristotle', 'Alan Turing', 'Charles Darwin'],
-    answer: 1
+    answer: 1,
+    hint: 'Think ancient Greece, ~350 BCE — the philosopher who classified living things by genus and species.'
   },
   {
     q: 'Which language, introduced alongside the Semantic Web vision, enables rich logic-based ontologies with automated reasoning?',
     options: ['HTML', 'OWL (Web Ontology Language)', 'CSS', 'JSON'],
-    answer: 1
+    answer: 1,
+    hint: 'It stands for "Web Ontology Language" — a somewhat playful acronym that doesn\'t match its initials.'
   },
   {
     q: 'What foundational data model represents facts as subject–predicate–object statements?',
     options: ['RDF triples', 'SQL tables', 'CSV rows', 'YAML documents'],
-    answer: 0
+    answer: 0,
+    hint: 'This is the same 3-part structure you used in Level 2\'s triple builder, e.g. "Cat —isA→ Animal".'
   },
   {
     q: 'What technique lets modern LLM systems traverse a knowledge graph to gather connected, multi-hop context before answering?',
     options: ['GraphRAG', 'CSS Grid', 'OAuth', 'WebSockets'],
-    answer: 0
+    answer: 0,
+    hint: 'It combines "Retrieval-Augmented Generation" with graph traversal — the clue is in the name.'
   }
 ];
