@@ -21,17 +21,24 @@ const POINTS = {
 };
 
 // isA hierarchy edges (structural / taxonomy relationships).
+// The optional 4th element biases the edge label along the line (t: 0-1,
+// default 0.5 = midpoint). "mammal -> animal" is a near-vertical edge that
+// runs straight into the underside of the Animal node, so a plain midpoint
+// label sits right on top of Animal's own node label — biasing it back
+// toward the child end (mammal) keeps it clear.
 const HIER_EDGES = [
   ['cat', 'mammal', 'isA'],
   ['dog', 'mammal', 'isA'],
-  ['mammal', 'animal', 'isA'],
+  ['mammal', 'animal', 'isA', { t: 0.32 }],
 ];
 
 // Instance-level relationship + typing triples.
+// "whiskers -> cat" has the same near-vertical collision as mammal->animal
+// above, so it gets the same label-bias treatment.
 const TRIPLE_EDGES = [
   ['alice', 'person', 'isA'],
   ['acme', 'company', 'isA'],
-  ['whiskers', 'cat', 'isA'],
+  ['whiskers', 'cat', 'isA', { t: 0.3 }],
   ['alice', 'acme', 'worksAt'],
   ['alice', 'whiskers', 'owns'],
 ];
@@ -111,9 +118,12 @@ function renderVisual(e, step) {
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
   // Edges render first so node circles sit visually on top.
-  step.edges.forEach(([fromId, toId, label], i) => {
+  step.edges.forEach(([fromId, toId, label, labelOpts], i) => {
     const a = POINTS[fromId];
     const b = POINTS[toId];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
     const g = document.createElementNS(SVG_NS, 'g');
     g.setAttribute('class', 'intro-fade-in');
     g.style.animationDelay = `${0.12 + i * 0.09}s`;
@@ -125,10 +135,18 @@ function renderVisual(e, step) {
     line.setAttribute('stroke', label === 'isA' ? '#5b95ff' : '#ffb454');
     line.setAttribute('stroke-width', '1.5');
     line.setAttribute('class', 'intro-draw');
+    // Size the "draw-in" dash to this exact edge's length so the line
+    // always finishes flush against its target node, however long it is —
+    // a fixed dash size clips longer edges before they reach their target.
+    line.style.strokeDasharray = String(len);
+    line.style.strokeDashoffset = String(len);
     g.appendChild(line);
     if (label) {
-      const mx = (a.x + b.x) / 2;
-      const my = (a.y + b.y) / 2;
+      // Labels default to the edge midpoint (t=0.5); a few near-vertical
+      // edges override t via labelOpts to dodge the target node's own label.
+      const t = (labelOpts && labelOpts.t) ?? 0.5;
+      const mx = a.x + dx * t;
+      const my = a.y + dy * t;
       const text = document.createElementNS(SVG_NS, 'text');
       text.setAttribute('x', mx);
       text.setAttribute('y', my - 6);
