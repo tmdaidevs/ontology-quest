@@ -67,27 +67,54 @@ async function fetchRelations(qid, signal) {
 
 export function mount(container, api) {
   container.innerHTML = `
-    <div class="card">
-      <h3>🌐 Live Knowledge Graph Explorer</h3>
-      <p>Every other level used curated examples. This one is <strong>live</strong> — you're querying <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>, a real public knowledge graph of 100M+ entities, through its actual SPARQL endpoint, in your browser, right now. Search for a person, place, or concept, then click any related entity to <strong>hop</strong> across real RDF relationships — the same multi-hop traversal you saw simulated in Level 4.</p>
-      <div class="live-search-row">
-        <input type="text" id="l6-search-input" placeholder="Search Wikidata… e.g. 'Ada Lovelace'" autocomplete="off" />
-      </div>
-      <div class="live-status-row" id="l6-search-status"></div>
-      <div class="live-chips" id="l6-chips"></div>
-      <div class="live-results" id="l6-results"></div>
+    <div class="mode-toggle" id="l6-mode-toggle">
+      <button class="mode-tab active" data-mode="free" type="button">🔭 Free Explore</button>
+      <button class="mode-tab" data-mode="challenge" type="button">🔗 Six-Hop Challenge</button>
     </div>
 
-    <div class="card" id="l6-explore-card" hidden>
-      <h3>Live Traversal</h3>
-      <div class="live-breadcrumbs" id="l6-breadcrumbs"></div>
-      <div class="live-status-row" id="l6-status"></div>
-      <div class="graph-wrap" id="l6-graph"></div>
-      <p style="color:var(--text-2); font-size:0.85rem; margin-top:10px;">Click a node above, or an item below, to hop one relationship deeper.</p>
-      <div class="live-rel-list" id="l6-rel-list"></div>
-      <div class="sparql-toggle">
-        <button class="btn btn-ghost" id="l6-toggle-sparql">🔎 View live SPARQL query</button>
-        <div class="sparql-box" id="l6-sparql-box" hidden></div>
+    <div id="l6-free-panel">
+      <div class="card">
+        <h3>🌐 Live Knowledge Graph Explorer</h3>
+        <p>Every other level used curated examples. This one is <strong>live</strong> — you're querying <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>, a real public knowledge graph of 100M+ entities, through its actual SPARQL endpoint, in your browser, right now. Search for a person, place, or concept, then click any related entity to <strong>hop</strong> across real RDF relationships — the same multi-hop traversal you saw simulated in Level 4.</p>
+        <div class="live-search-row">
+          <input type="text" id="l6-search-input" placeholder="Search Wikidata… e.g. 'Ada Lovelace'" autocomplete="off" />
+        </div>
+        <div class="live-status-row" id="l6-search-status"></div>
+        <div class="live-chips" id="l6-chips"></div>
+        <div class="live-results" id="l6-results"></div>
+      </div>
+
+      <div class="card" id="l6-explore-card" hidden>
+        <h3>Live Traversal</h3>
+        <div class="live-breadcrumbs" id="l6-breadcrumbs"></div>
+        <div class="live-status-row" id="l6-status"></div>
+        <div class="graph-wrap" id="l6-graph"></div>
+        <p style="color:var(--text-2); font-size:0.85rem; margin-top:10px;">Click a node above, or an item below, to hop one relationship deeper.</p>
+        <div class="live-rel-list" id="l6-rel-list"></div>
+        <div class="sparql-toggle">
+          <button class="btn btn-ghost" id="l6-toggle-sparql">🔎 View live SPARQL query</button>
+          <div class="sparql-box" id="l6-sparql-box" hidden></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="l6-challenge-panel" hidden>
+      <div class="card">
+        <h3>🔗 Six-Hop Challenge</h3>
+        <p>Starting from a random <strong>live</strong> Wikidata entity, hop across real relationships without ever revisiting a node — reach <strong>6 hops</strong> to complete the challenge. If every remaining relationship leads back to somewhere you've already been, the run ends there and you're scored on hops achieved.</p>
+        <div class="challenge-hud" id="l6-challenge-hud" hidden>
+          <div class="chud-stat"><span class="chud-label">Hops</span><span class="chud-value" id="l6-chud-hops">0 / 6</span></div>
+          <div class="challenge-trail" id="l6-challenge-trail"></div>
+        </div>
+        <div class="live-status-row" id="l6-challenge-status"></div>
+        <div class="hop-controls">
+          <button class="btn btn-primary" id="l6-challenge-start" type="button">🎲 Start Challenge</button>
+        </div>
+      </div>
+      <div class="card" id="l6-challenge-explore-card" hidden>
+        <div class="graph-wrap" id="l6-challenge-graph"></div>
+        <p style="color:var(--text-2); font-size:0.85rem; margin-top:10px;">Click an <strong>unvisited</strong> node above, or an item below, to take your next hop.</p>
+        <div class="live-rel-list" id="l6-challenge-rel-list"></div>
       </div>
     </div>
   `;
@@ -123,6 +150,67 @@ export function mount(container, api) {
     span.textContent = text;
     if (isError) span.style.color = 'var(--danger)';
     el.appendChild(span);
+  }
+
+  // --- mode toggle: Free Explore vs Six-Hop Challenge (share the search/fetch helpers below) ---
+  const modeToggleEl = container.querySelector('#l6-mode-toggle');
+  const freePanel = container.querySelector('#l6-free-panel');
+  const challengePanel = container.querySelector('#l6-challenge-panel');
+  modeToggleEl.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (tab.classList.contains('active')) return;
+      modeToggleEl.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const mode = tab.dataset.mode;
+      freePanel.hidden = mode !== 'free';
+      challengePanel.hidden = mode !== 'challenge';
+    });
+  });
+
+  // --- shared graph/rel-list renderers used by BOTH Free Explore and the Challenge ---
+  // `visited`, when provided, marks already-visited entities as non-clickable (Challenge mode's no-repeat rule).
+  function renderGraphInto(targetEl, centerLabel, rels, onHop, visited) {
+    const width = 700, height = 380;
+    const cx = width / 2, cy = height / 2;
+    const radius = Math.min(width, height) / 2 - 70;
+    const nodes = [{ id: 'center', label: centerLabel, x: cx, y: cy, r: 30, icon: '🎯' }];
+    const edges = [];
+    rels.forEach((rel, i) => {
+      const angle = (i / Math.max(rels.length, 1)) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+      nodes.push({ id: rel.valueQid, label: rel.valueLabel, x, y, r: 22, icon: '●' });
+      edges.push({ from: 'center', to: rel.valueQid, label: rel.propLabel });
+    });
+    const handles = renderGraph(targetEl, { nodes, edges }, { width, height });
+    rels.forEach(rel => {
+      const g = handles.nodeEls[rel.valueQid];
+      if (!g) return;
+      if (visited && visited.has(rel.valueQid)) {
+        g.classList.add('visited');
+      } else {
+        g.style.cursor = 'pointer';
+        g.addEventListener('click', () => onHop(rel.valueQid, rel.valueLabel));
+      }
+    });
+    // Highlight the whole neighborhood briefly so the "live" traversal reads clearly.
+    setHighlight(handles, { nodes: nodes.map(n => n.id), edges: edges.map((_, i) => i), dimOthers: false });
+  }
+
+  function renderRelListInto(targetEl, rels, onHop, visited) {
+    targetEl.innerHTML = '';
+    if (!rels.length) {
+      targetEl.innerHTML = '<div class="live-empty">No outgoing entity relationships found for this node.</div>';
+      return;
+    }
+    rels.forEach(rel => {
+      const isVisited = !!(visited && visited.has(rel.valueQid));
+      const item = document.createElement('div');
+      item.className = 'live-rel-item' + (isVisited ? ' visited' : '');
+      item.innerHTML = `<span><span class="rel-prop">${escapeHtml(rel.propLabel)}</span> → <span class="rel-val">${escapeHtml(rel.valueLabel)}</span></span><span class="rel-hop">${isVisited ? 'already visited' : 'hop →'}</span>`;
+      if (!isVisited) item.addEventListener('click', () => onHop(rel.valueQid, rel.valueLabel));
+      targetEl.appendChild(item);
+    });
   }
 
   // --- search ---
@@ -239,8 +327,8 @@ export function mount(container, api) {
     exploreCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     try {
       const { query, rels } = await fetchRelations(qid, exploreController.signal);
-      renderGraphFor(label, rels);
-      renderRelList(rels);
+      renderGraphInto(graphEl, label, rels, hopTo, null);
+      renderRelListInto(relListEl, rels, hopTo, null);
       sparqlBox.textContent = query;
       setStatus(
         statusEl,
@@ -282,49 +370,140 @@ export function mount(container, api) {
     });
   }
 
-  function renderGraphFor(centerLabel, rels) {
-    const width = 700, height = 380;
-    const cx = width / 2, cy = height / 2;
-    const radius = Math.min(width, height) / 2 - 70;
-    const nodes = [{ id: 'center', label: centerLabel, x: cx, y: cy, r: 30, icon: '🎯' }];
-    const edges = [];
-    rels.forEach((rel, i) => {
-      const angle = (i / Math.max(rels.length, 1)) * Math.PI * 2 - Math.PI / 2;
-      const x = cx + radius * Math.cos(angle);
-      const y = cy + radius * Math.sin(angle);
-      nodes.push({ id: rel.valueQid, label: rel.valueLabel, x, y, r: 22, icon: '●' });
-      edges.push({ from: 'center', to: rel.valueQid, label: rel.propLabel });
-    });
-    const handles = renderGraph(graphEl, { nodes, edges }, { width, height });
-    rels.forEach(rel => {
-      const g = handles.nodeEls[rel.valueQid];
-      if (g) {
-        g.style.cursor = 'pointer';
-        g.addEventListener('click', () => hopTo(rel.valueQid, rel.valueLabel));
-      }
-    });
-    // Highlight the whole neighborhood briefly so the "live" traversal reads clearly.
-    setHighlight(handles, { nodes: nodes.map(n => n.id), edges: edges.map((_, i) => i), dimOthers: false });
-  }
-
-  function renderRelList(rels) {
-    relListEl.innerHTML = '';
-    if (!rels.length) {
-      relListEl.innerHTML = '<div class="live-empty">No outgoing entity relationships found for this node.</div>';
-      return;
-    }
-    rels.forEach(rel => {
-      const item = document.createElement('div');
-      item.className = 'live-rel-item';
-      item.innerHTML = `<span><span class="rel-prop">${escapeHtml(rel.propLabel)}</span> → <span class="rel-val">${escapeHtml(rel.valueLabel)}</span></span><span class="rel-hop">hop →</span>`;
-      item.addEventListener('click', () => hopTo(rel.valueQid, rel.valueLabel));
-      relListEl.appendChild(item);
-    });
-  }
-
   sparqlToggleBtn.addEventListener('click', () => {
     sparqlVisible = !sparqlVisible;
     sparqlBox.hidden = !sparqlVisible;
     sparqlToggleBtn.textContent = sparqlVisible ? '🔎 Hide SPARQL query' : '🔎 View live SPARQL query';
   });
+
+  // --- Six-Hop Challenge: chain live hops without ever revisiting a node ---
+  const challengeHud = container.querySelector('#l6-challenge-hud');
+  const chudHops = container.querySelector('#l6-chud-hops');
+  const challengeTrailEl = container.querySelector('#l6-challenge-trail');
+  const challengeStatusEl = container.querySelector('#l6-challenge-status');
+  const challengeStartBtn = container.querySelector('#l6-challenge-start');
+  const challengeExploreCard = container.querySelector('#l6-challenge-explore-card');
+  const challengeGraphEl = container.querySelector('#l6-challenge-graph');
+  const challengeRelListEl = container.querySelector('#l6-challenge-rel-list');
+
+  let challengeVisited = new Set();
+  let challengeTrail = []; // ordered [{ qid, label }]
+  let challengeHops = 0;
+  let challengeController = null;
+  let challengeDone = false;
+
+  challengeStartBtn.addEventListener('click', startChallenge);
+
+  async function startChallenge() {
+    if (challengeController) challengeController.abort();
+    challengeDone = false;
+    challengeHops = 0;
+    challengeVisited = new Set();
+    challengeTrail = [];
+    challengeHud.hidden = false;
+    challengeExploreCard.hidden = false;
+    challengeStartBtn.textContent = '🎲 New Random Start';
+    updateChallengeHud();
+    renderChallengeTrail();
+    challengeGraphEl.innerHTML = '';
+    challengeRelListEl.innerHTML = '';
+    const pick = CHIP_LABELS[Math.floor(Math.random() * CHIP_LABELS.length)];
+    setStatus(challengeStatusEl, `Looking up a random start entity ("${pick}")…`, true);
+    challengeController = new AbortController();
+    const clearStartTimeout = armTimeout(challengeController);
+    try {
+      const results = await searchEntities(pick, challengeController.signal);
+      if (!results.length) { setStatus(challengeStatusEl, 'Could not find a start entity — try again.', false, true); return; }
+      const start = results[0];
+      challengeVisited.add(start.id);
+      challengeTrail.push({ qid: start.id, label: start.label });
+      renderChallengeTrail();
+      await loadChallengeEntity(start.id, start.label);
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      setStatus(challengeStatusEl, '⚠️ Could not reach Wikidata right now. Please try again.', false, true);
+    } finally {
+      clearStartTimeout();
+    }
+  }
+
+  function hopToChallenge(qid, label) {
+    if (challengeDone || challengeVisited.has(qid)) return;
+    challengeVisited.add(qid);
+    challengeHops++;
+    challengeTrail.push({ qid, label });
+    updateChallengeHud();
+    renderChallengeTrail();
+    loadChallengeEntity(qid, label);
+  }
+
+  async function loadChallengeEntity(qid, label) {
+    setStatus(challengeStatusEl, `Querying live SPARQL endpoint for "${label}"…`, true);
+    challengeGraphEl.innerHTML = '';
+    challengeRelListEl.innerHTML = '';
+    if (challengeController) challengeController.abort();
+    challengeController = new AbortController();
+    const clearHopTimeout = armTimeout(challengeController);
+    try {
+      const { rels } = await fetchRelations(qid, challengeController.signal);
+      renderGraphInto(challengeGraphEl, label, rels, hopToChallenge, challengeVisited);
+      renderRelListInto(challengeRelListEl, rels, hopToChallenge, challengeVisited);
+      if (!badgeEarned) {
+        badgeEarned = true;
+        api.badge('live-explorer', 'Live Data Explorer', '🌐');
+      }
+      const unvisited = rels.filter(r => !challengeVisited.has(r.valueQid));
+      if (challengeHops >= 6) {
+        finishChallenge(true);
+      } else if (!unvisited.length) {
+        finishChallenge(false);
+      } else {
+        setStatus(challengeStatusEl, `Hop ${challengeHops} of 6 — choose an unvisited entity below to continue.`);
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      if (err.name === 'TimeoutError') {
+        setStatus(challengeStatusEl, '⏱️ The Wikidata SPARQL endpoint is taking too long to respond. Please try again.', false, true);
+      } else {
+        setStatus(challengeStatusEl, '⚠️ Could not reach the Wikidata SPARQL endpoint right now. Please try again.', false, true);
+      }
+    } finally {
+      clearHopTimeout();
+    }
+  }
+
+  function updateChallengeHud() {
+    chudHops.textContent = `${challengeHops} / 6`;
+  }
+
+  function renderChallengeTrail() {
+    challengeTrailEl.innerHTML = challengeTrail
+      .map((t, i) => `<span class="ct-node">${i === 0 ? '🎯 ' : ''}${escapeHtml(t.label)}</span>`)
+      .join('<span class="ct-arrow">→</span>');
+  }
+
+  function finishChallenge(success) {
+    challengeDone = true;
+    const score = Math.max(0, Math.min(100, Math.round((challengeHops / 6) * 100)));
+    let badge = null;
+    if (success) {
+      const added = api.badge('six-hop-voyager', 'Six-Hop Voyager', '🔗');
+      if (added) badge = { name: 'Six-Hop Voyager', icon: '🔗' };
+    }
+    setStatus(
+      challengeStatusEl,
+      success
+        ? '🎉 You reached all 6 live hops without repeating a node!'
+        : `⛓️ Every remaining relationship led back to an already-visited node — the run ends at ${challengeHops} hop${challengeHops === 1 ? '' : 's'}.`
+    );
+    api.complete(score, {
+      heading: success ? '🎉 Six-Hop Challenge complete!' : 'Challenge ended — nice run',
+      detail: `You chained ${challengeHops} live Wikidata relationship${challengeHops === 1 ? '' : 's'} in a row without ever revisiting a node.`,
+      badge,
+      recap: [
+        { title: 'Hops achieved', body: `${challengeHops} / 6` },
+        { title: 'Path taken', body: challengeTrail.map(t => t.label).join(' → ') }
+      ]
+    });
+  }
 }

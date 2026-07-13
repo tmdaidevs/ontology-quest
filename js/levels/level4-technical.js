@@ -205,10 +205,29 @@ export function mount(container, api) {
       </div>
       <div class="mv-caption">One query flowing through: seed via vectors → expand via graph → assemble → grounded answer.</div>
     </div>`;
+  const inferenceViz = `
+    <div class="mini-viz mini-inference-chain" aria-hidden="true">
+      <svg viewBox="0 0 340 190" class="mv-svg">
+        <line x1="55" y1="120" x2="170" y2="120" class="inf-edge inf-explicit" style="--d:0.3s"/>
+        <text x="112" y="108" class="inf-edge-label" style="--d:0.3s">isA</text>
+        <line x1="170" y1="120" x2="285" y2="120" class="inf-edge inf-explicit" style="--d:1.5s"/>
+        <text x="227" y="108" class="inf-edge-label" style="--d:1.5s">isA</text>
+        <path d="M55,120 Q170,20 285,120" class="inf-edge inf-inferred" style="--d:0s"/>
+        <text x="170" y="34" class="inf-edge-label inferred" style="--d:0s">isA (inferred) ⚡</text>
+        <circle cx="55" cy="120" r="13" class="inf-node" style="--d:0s"/>
+        <text x="55" y="148" class="inf-node-label" style="--d:0s">Cat</text>
+        <circle cx="170" cy="120" r="15" class="inf-node" style="--d:0.6s"/>
+        <text x="170" y="148" class="inf-node-label" style="--d:0.6s">Mammal</text>
+        <circle cx="285" cy="120" r="15" class="inf-node" style="--d:1.8s"/>
+        <text x="285" y="148" class="inf-node-label" style="--d:1.8s">Animal</text>
+      </svg>
+      <div class="mv-caption">An RDFS/OWL reasoner applies rules like <em>transitivity</em> automatically: from the two stated facts "Cat isA Mammal" and "Mammal isA Animal", it derives the new fact "Cat isA Animal" — without anyone writing that triple down.</div>
+    </div>`;
   const algoItems = [
     { title: 'Graph Traversal: BFS & DFS', body: 'To find multi-hop answers, engines walk the graph using Breadth-First Search (explore all neighbors at the current depth before going deeper — great for "shortest path" / nearest connections) or Depth-First Search (follow one path as far as possible before backtracking). Most graph query engines use BFS-style traversal bounded by a max hop count for performance.', viz: bfsDfsViz },
     { title: 'Embedding-Based Similarity Search', body: 'Not all "hops" are explicit graph edges. Modern systems also compute vector embeddings for nodes and text, allowing "approximate hops" via nearest-neighbor similarity search — useful when relationships are implicit or the graph is incomplete.', viz: embeddingViz },
-    { title: 'Hybrid Symbolic + Vector Retrieval (GraphRAG)', body: 'GraphRAG combines symbolic graph traversal (precise, explainable, rule-based) with vector similarity search (fuzzy, semantic) — first identifying relevant entities via embeddings, then traversing the graph from those entities to gather multi-hop connected context, which is fed into the LLM prompt for a grounded answer.', viz: pipelineViz }
+    { title: 'Hybrid Symbolic + Vector Retrieval (GraphRAG)', body: 'GraphRAG combines symbolic graph traversal (precise, explainable, rule-based) with vector similarity search (fuzzy, semantic) — first identifying relevant entities via embeddings, then traversing the graph from those entities to gather multi-hop connected context, which is fed into the LLM prompt for a grounded answer.', viz: pipelineViz },
+    { title: 'Transitive Inference: RDFS & OWL Reasoning', body: 'RDFS and OWL let you declare a property "transitive" (like isA / subClassOf). A reasoner then walks the asserted triples and materializes new ones that were never written down — this is how ontologies support automated logical inference, not just storage and lookup.', viz: inferenceViz }
   ];
   const algoAccordion = container.querySelector('#algo-accordion');
   algoItems.forEach(it => {
