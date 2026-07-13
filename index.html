@@ -33,11 +33,13 @@
         <button class="btn btn-ghost" id="btn-map" title="Level map">Map</button>
         <button class="btn btn-ghost btn-danger" id="btn-reset" title="Reset progress">Reset</button>
       </div>
+      <button class="btn btn-icon" id="btn-mute" title="Mute sound effects" aria-pressed="false">🔊</button>
     </header>
 
     <main id="main-content">
       <!-- LANDING SCREEN -->
       <section class="screen active" id="screen-landing">
+        <canvas id="landing-bg-canvas" class="landing-bg-canvas" aria-hidden="true"></canvas>
         <div class="landing-hero">
           <h1>Ontology Quest</h1>
           <p class="tagline">Master the art &amp; science of <strong>knowledge graphs</strong> and <strong>ontologies</strong> — from Aristotle to GraphRAG — in five bite-sized, interactive levels.</p>
@@ -54,14 +56,17 @@
           </div>
           <p class="hero-note">No login. No install. Your progress is saved automatically in this browser.</p>
         </div>
+        <div class="daily-challenge-wrap" id="daily-challenge-slot"></div>
       </section>
 
       <!-- LEVEL MAP SCREEN -->
       <section class="screen" id="screen-map">
         <h2 class="section-title">Choose Your Level</h2>
         <p class="section-sub">Complete each level to unlock the next. Replay anytime to improve your score.</p>
+        <div class="progress-rail" id="progress-rail"><!-- populated by JS --></div>
         <div class="level-grid" id="level-grid"><!-- populated by JS --></div>
         <div class="badge-shelf" id="badge-shelf"></div>
+        <div class="achievements-row" id="achievements-row"></div>
       </section>
 
       <!-- LEVEL CONTAINERS (mounted dynamically) -->

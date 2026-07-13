@@ -546,7 +546,7 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 .results-score { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 700; color: var(--accent); text-shadow: 0 0 22px rgba(46,230,200,0.4); }
 .results-score-max { font-family: var(--font-mono); color: var(--text-2); font-size: 1.1rem; }
 .results-detail { color: var(--text-1); font-size: 0.95rem; margin: 4px 0 0; }
-.results-badge-row { margin-top: 14px; }
+.results-badge-row { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .results-recap, .results-checklist {
   margin-top: 18px; text-align: left;
   display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 10px;
@@ -974,6 +974,42 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 }
 @keyframes pfDotMove { 0% { left: 20px; } 100% { left: calc(100% - 20px); } }
 
+/* Transitive inference (RDFS/OWL reasoning) loop: two explicit "isA" facts fade in,
+   then a dashed arc animates in to represent a fact the reasoner *derives* — never
+   written anywhere — via the transitivity rule. Same delay/duration convention as
+   the other mini-viz loops above (CSS-only, animation: ... infinite). */
+.mini-inference-chain { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 12px 6px; }
+.inf-node { fill: var(--bg-3); stroke: var(--border-bright); stroke-width: 1.5; opacity: 0; animation: infNodeIn 6s ease-in-out infinite; animation-delay: var(--d); transform-box: fill-box; transform-origin: center; }
+@keyframes infNodeIn {
+  0% { opacity: 0; transform: scale(0.6); fill: var(--bg-3); stroke: var(--border-bright); }
+  4% { opacity: 1; fill: var(--accent); stroke: var(--accent); transform: scale(1.2); }
+  12% { fill: var(--bg-3); stroke: var(--border-bright); transform: scale(1); }
+  90% { opacity: 1; }
+  97%, 100% { opacity: 0; }
+}
+.inf-node-label { fill: var(--text-1); font-size: 11px; font-family: var(--font-mono); text-anchor: middle; opacity: 0; animation: infLabelIn 6s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes infLabelIn { 0% { opacity: 0; } 4% { opacity: 1; } 90% { opacity: 1; } 97%, 100% { opacity: 0; } }
+
+.inf-edge.inf-explicit { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 150; stroke-dashoffset: 150; opacity: 0; animation: infExplicitDraw 6s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes infExplicitDraw {
+  0% { stroke-dashoffset: 150; opacity: 0; }
+  10% { stroke-dashoffset: 0; opacity: 0.9; }
+  90% { stroke-dashoffset: 0; opacity: 0.9; }
+  97%, 100% { stroke-dashoffset: 150; opacity: 0; }
+}
+.inf-edge.inf-inferred {
+  fill: none; stroke: var(--accent-2); stroke-width: 2.25; stroke-dasharray: 320; stroke-dashoffset: 320; opacity: 0;
+  animation: infInferredDraw 6s ease-in-out infinite; animation-delay: var(--d);
+}
+@keyframes infInferredDraw {
+  0%, 45% { stroke-dashoffset: 320; opacity: 0; filter: drop-shadow(0 0 0 rgba(255,180,84,0)); }
+  62% { stroke-dashoffset: 0; opacity: 1; filter: drop-shadow(0 0 6px rgba(255,180,84,0.7)); }
+  88% { stroke-dashoffset: 0; opacity: 1; filter: drop-shadow(0 0 6px rgba(255,180,84,0.7)); }
+  97%, 100% { stroke-dashoffset: 320; opacity: 0; filter: drop-shadow(0 0 0 rgba(255,180,84,0)); }
+}
+.inf-edge-label { fill: var(--text-2); font-size: 10px; font-family: var(--font-mono); text-anchor: middle; opacity: 0; animation: infExplicitDraw 6s ease-in-out infinite; animation-delay: var(--d); }
+.inf-edge-label.inferred { fill: var(--accent-2); font-weight: 700; animation: infInferredDraw 6s ease-in-out infinite; animation-delay: var(--d); }
+
 @media (max-width: 640px) {
   .mini-traverse-compare { flex-direction: column; }
   /* Stacked BFS/DFS panels take more vertical room on narrow screens. */
@@ -1069,4 +1105,150 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
   .intro-stage { padding: 20px 16px 18px; }
   .intro-visual { height: 280px; }
   .intro-title { font-size: 1.15rem; }
+}
+
+/* ==========================================================================
+   Session 3 enhancements: sound toggle, ambient background, daily challenge,
+   progress rail, achievements row, confetti, Level 6 challenge mode, certificate.
+   ========================================================================== */
+
+/* Mute toggle — small square icon button, always visible in the topbar. */
+.btn-icon {
+  width: 40px; height: 40px; padding: 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-icon:hover { border-color: var(--accent); color: var(--text-0); background: var(--bg-2); }
+
+/* Ambient constellation canvas behind the landing hero. */
+#screen-landing { position: relative; }
+.landing-bg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.landing-hero, .daily-challenge-wrap { position: relative; z-index: 1; }
+
+/* Daily Challenge card (landing screen) */
+.daily-challenge-wrap { max-width: 640px; margin: 0 auto 40px; }
+.daily-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent-2);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+}
+.daily-card.done { border-left-color: var(--success); opacity: 0.92; }
+.daily-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.daily-streak { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-2); }
+.daily-q { font-size: 1rem; color: var(--text-0); margin: 0 0 14px; font-weight: 600; }
+.daily-opts { display: flex; flex-direction: column; gap: 8px; }
+.daily-opt { text-align: left; text-transform: none; letter-spacing: normal; font-family: var(--font-sans); font-weight: 400; }
+.daily-msg { color: var(--text-1); margin: 0; }
+.daily-feedback { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); color: var(--text-1); font-size: 0.9rem; }
+.daily-feedback p { margin: 0 0 6px; }
+.daily-streak-update { color: var(--accent-2); font-family: var(--font-mono); font-size: 0.82rem; }
+
+/* Progress rail (level map) — a connected chain of the 5 core levels. */
+.progress-rail { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+.rail-node {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem;
+  background: var(--bg-2); border: 2px solid var(--border-bright); color: var(--text-2);
+  transition: all 0.3s ease;
+}
+.rail-node.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 14px rgba(46,230,200,0.35); }
+.rail-node.done { border-color: var(--success); background: var(--success); color: #04241a; }
+.rail-node.locked { opacity: 0.5; }
+.rail-seg { width: 34px; height: 2px; background: var(--border); flex-shrink: 0; transition: background 0.4s ease; }
+.rail-seg.seg-filled { background: var(--success); }
+
+/* Achievements row (level map) — share card + certificate. */
+.achievements-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+
+/* Confetti burst canvas (owned/removed by confetti.js). */
+.confetti-canvas { position: fixed; inset: 0; z-index: 300; pointer-events: none; }
+
+/* Level 6: Free Explore / Six-Hop Challenge mode toggle */
+.mode-toggle { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.mode-tab {
+  background: var(--bg-2); border: 1px solid var(--border); color: var(--text-1);
+  padding: 10px 18px; border-radius: var(--radius-sm); cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em; transition: all 0.15s ease;
+}
+.mode-tab:hover { border-color: var(--accent); color: var(--text-0); }
+.mode-tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* Level 6: Six-Hop Challenge HUD + trail */
+.challenge-hud {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 16px; margin: 14px 0;
+}
+.chud-stat { display: flex; flex-direction: column; gap: 2px; }
+.chud-label { font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-2); }
+.chud-value { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+.challenge-trail { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1; }
+.ct-node {
+  background: var(--bg-3); border: 1px solid var(--border-bright); border-radius: var(--radius-sm);
+  padding: 4px 10px; font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-0); white-space: nowrap;
+}
+.ct-arrow { color: var(--text-2); font-size: 0.8rem; }
+
+/* Level 6: visited-node styling (Challenge mode's no-repeat rule) */
+.g-node.visited circle { opacity: 0.3; stroke: var(--text-2); }
+.g-node.visited text { opacity: 0.4; }
+.live-rel-item.visited { opacity: 0.45; cursor: not-allowed; }
+.live-rel-item.visited:hover { border-color: var(--border); transform: none; }
+
+/* Certificate modal */
+.cert-modal-overlay {
+  position: fixed; inset: 0; z-index: 250;
+  background: rgba(4,6,9,0.86); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  animation: fadeIn 0.25s ease; overflow-y: auto;
+}
+.cert-modal {
+  position: relative;
+  width: min(760px, 100%);
+  background: var(--bg-1); border: 1px solid var(--border-bright); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 28px 30px; max-height: 92vh; overflow-y: auto;
+}
+.cert-modal h3 { margin: 0 0 8px; font-family: var(--font-mono); font-size: 1.2rem; }
+.cert-modal-close {
+  position: absolute; top: 18px; right: 18px;
+  background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-1); width: 32px; height: 32px; cursor: pointer; font-size: 0.9rem;
+}
+.cert-modal-close:hover { border-color: var(--danger); color: var(--danger); }
+.cert-modal-sub { color: var(--text-1); margin: 0 0 16px; }
+.cert-name-row { margin-bottom: 16px; }
+.cert-name-row input {
+  width: 100%; background: var(--bg-2); border: 1px solid var(--border); color: var(--text-0);
+  border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.95rem; font-family: var(--font-sans);
+}
+.cert-name-row input:focus { outline: none; border-color: var(--accent); }
+.cert-preview-wrap {
+  width: 100%; overflow-x: auto; background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 16px;
+}
+.cert-preview-canvas { width: 100%; height: auto; display: block; }
+.cert-linkedin-tip {
+  color: var(--text-1); font-size: 0.86rem; background: var(--bg-2);
+  border-left: 2px solid var(--accent); border-radius: var(--radius-sm); padding: 12px 14px; margin: 0 0 18px;
+}
+.cert-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .rail-node { width: 30px; height: 30px; font-size: 0.75rem; }
+  .rail-seg { width: 16px; }
+  .mode-tab { flex: 1 1 auto; text-align: center; }
+  .achievements-row { flex-direction: column; }
+  .achievements-row .btn { width: 100%; }
+  .cert-modal { padding: 22px 18px; }
+  .challenge-hud { gap: 10px; }
 }

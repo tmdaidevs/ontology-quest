@@ -2,6 +2,12 @@
 import * as progress from './progress.js';
 import { animateCount, animateCountTargets } from './ui-utils.js';
 import { openIntro, initIntro } from './intro.js';
+import { sfx, isMuted, toggleMuted } from './sound.js';
+import { burstConfetti } from './confetti.js';
+import { mount as mountDaily } from './daily-challenge.js';
+import { init as initBgConstellation, start as startBgConstellation, stop as stopBgConstellation } from './bg-constellation.js';
+import { downloadShareCard } from './share-card.js';
+import { openCertificateModal, coreLevelsComplete } from './certificate.js';
 
 const TOTAL_LEVELS = 5;
 
@@ -40,6 +46,8 @@ function showScreen(name) {
   Object.values(screens).forEach(s => s && s.classList.remove('active'));
   if (screens[name]) screens[name].classList.add('active');
   document.getElementById('topbar-stats').hidden = name === 'landing';
+  // The ambient constellation animation only ever needs to run behind the landing hero.
+  if (name === 'landing') startBgConstellation(); else stopBgConstellation();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -62,6 +70,16 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     showToast('Progress reset.');
   }
 });
+
+// --- sound mute toggle (always visible in the topbar, independent of level progress) ---
+const muteBtn = document.getElementById('btn-mute');
+function updateMuteBtn() {
+  muteBtn.textContent = isMuted() ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-pressed', String(isMuted()));
+  muteBtn.title = isMuted() ? 'Unmute sound effects' : 'Mute sound effects';
+}
+muteBtn.addEventListener('click', () => { toggleMuted(); updateMuteBtn(); });
+updateMuteBtn();
 
 let lastKnownScore = 0;
 function updateTopbar() {
@@ -107,24 +125,111 @@ function renderMap() {
     ? badges.map((b, i) => `<span class="badge-chip badge-pop" style="animation-delay:${i * 60}ms">${b.name}</span>`).join('')
     : '<span style="color:var(--text-2)">No badges yet — complete levels perfectly to earn them!</span>';
 
+  renderProgressRail();
+  renderAchievementsRow();
   updateTopbar();
+}
+
+/** A connected "graph" of nodes/edges showing the core 1→5 progression at a glance. */
+function renderProgressRail() {
+  const rail = document.getElementById('progress-rail');
+  if (!rail) return;
+  const core = levelMeta.filter(m => !m.bonus);
+  rail.innerHTML = core.map((m, i) => {
+    const completed = progress.isCompleted(m.num);
+    const unlocked = progress.isUnlocked(m.num);
+    const state = completed ? 'done' : (unlocked ? 'active' : 'locked');
+    const seg = i > 0 ? `<span class="rail-seg ${progress.isCompleted(core[i - 1].num) ? 'seg-filled' : ''}"></span>` : '';
+    return `${seg}<span class="rail-node ${state}" title="${m.title}">${completed ? '✓' : m.num}</span>`;
+  }).join('');
+}
+
+/** Share Score Card is always available; the Certificate unlocks once all 5 core levels are done. */
+function renderAchievementsRow() {
+  const row = document.getElementById('achievements-row');
+  if (!row) return;
+  const unlocked = coreLevelsComplete();
+  row.innerHTML = `
+    <button class="btn btn-ghost" id="btn-share-card">🖼️ Share Score Card</button>
+    <button class="btn ${unlocked ? 'btn-primary' : 'btn-ghost'}" id="btn-certificate" ${unlocked ? '' : 'disabled'} title="${unlocked ? 'Download your certificate' : 'Complete all 5 core levels to unlock'}">🎓 ${unlocked ? 'Get Your Certificate' : 'Certificate (locked)'}</button>
+  `;
+  row.querySelector('#btn-share-card').addEventListener('click', () => downloadShareCard());
+  if (unlocked) row.querySelector('#btn-certificate').addEventListener('click', () => openCertificateModal());
 }
 
 const mountedLevels = new Set();
 const mountedModules = {}; // num -> imported level module (used by Replay to re-mount without re-importing)
 
+// In-memory (not persisted) per-attempt tracking used only to award meta-badges below.
+// Reset whenever a level is freshly mounted or replayed; never reset on a plain re-visit.
+const levelStartTimes = {};
+const levelHintsUsed = {};
+const ALL_LEVEL_NUMS = levelMeta.map(m => m.num);
+const CORE_LEVEL_NUMS = levelMeta.filter(m => !m.bonus).map(m => m.num);
+
+function resetAttempt(num) {
+  levelStartTimes[num] = Date.now();
+  levelHintsUsed[num] = 0;
+}
+
+/**
+ * Attaches ONE delegated click listener directly to a level's persistent body container
+ * (guarded so it's only ever attached once, even across replays that clear body.innerHTML).
+ * Because this listener runs in the bubble phase, by the time it fires, any click handler
+ * on the actual clicked element (e.g. a level's own quiz-option handler that toggles the
+ * .correct/.wrong class) has already run — so it can safely read the resulting classList to
+ * play the right sound, without any level module needing to know sound/hints exist at all.
+ */
+function attachLevelDelegation(body, num) {
+  if (body.dataset.delegated === '1') return;
+  body.dataset.delegated = '1';
+  body.addEventListener('click', (e) => {
+    const quizOpt = e.target.closest('.quiz-opt');
+    if (quizOpt) {
+      if (quizOpt.classList.contains('correct')) sfx.correct();
+      else if (quizOpt.classList.contains('wrong')) sfx.wrong();
+      return;
+    }
+    const hintBtn = e.target.closest('.hint-btn');
+    if (hintBtn) {
+      levelHintsUsed[num] = (levelHintsUsed[num] || 0) + 1;
+      sfx.hint();
+      return;
+    }
+    const gNode = e.target.closest('.g-node');
+    if (gNode && gNode.style.cursor === 'pointer') sfx.hop();
+  });
+}
+
+/** Awards cross-level "meta" badges based on this completion + overall progress state. */
+function computeMetaBadges({ score, elapsedMs, hintsUsed }) {
+  const earned = [];
+  const tryAward = (id, name, icon) => { if (progress.addBadge(id, name, icon)) earned.push({ name, icon }); };
+  if (hintsUsed === 0 && score >= 90) tryAward('sharp-mind', 'Sharp Mind', '💡');
+  if (elapsedMs !== null && elapsedMs < 60000 && score >= 70) tryAward('speedrunner', 'Speedrunner', '⚡');
+  if (CORE_LEVEL_NUMS.every(n => progress.getScore(n) === 100)) tryAward('perfectionist', 'Perfectionist', '💎');
+  if (ALL_LEVEL_NUMS.every(n => progress.isCompleted(n))) tryAward('completionist', 'Completionist', '🏆');
+  return earned;
+}
+
 /** Builds the { complete, badge } API object handed to each level module's mount(). */
 function buildApi(num) {
   return {
     complete: (score, meta) => {
+      const elapsedMs = levelStartTimes[num] ? Date.now() - levelStartTimes[num] : null;
+      const hintsUsed = levelHintsUsed[num] || 0;
       progress.completeLevel(num, score, TOTAL_LEVELS);
+      sfx.levelComplete();
+      burstConfetti({ gold: score >= 90 });
+      const metaBadges = computeMetaBadges({ score, elapsedMs, hintsUsed });
+      metaBadges.forEach(b => showToast(`🏅 Badge earned: ${b.name}`));
       updateTopbar();
       showToast(`Level ${num} complete! Score: ${Math.round(score)}/100`);
-      showResults(num, score, meta || {});
+      showResults(num, score, meta || {}, metaBadges);
     },
     badge: (id, name, icon) => {
       const added = progress.addBadge(id, name, icon);
-      if (added) showToast(`🏅 Badge earned: ${name}`);
+      if (added) { showToast(`🏅 Badge earned: ${name}`); sfx.badge(); }
       updateTopbar();
       return added;
     }
@@ -143,6 +248,8 @@ async function openLevel(num) {
     try {
       const mod = await levelLoaders[num]();
       body.innerHTML = '';
+      resetAttempt(num);
+      attachLevelDelegation(body, num);
       mod.mount(body, buildApi(num));
       mountedLevels.add(num);
       mountedModules[num] = mod;
@@ -166,6 +273,8 @@ function replay(num) {
   bar.innerHTML = '';
   body.hidden = false;
   body.innerHTML = '';
+  resetAttempt(num);
+  attachLevelDelegation(body, num);
   mod.mount(body, buildApi(num));
 }
 
@@ -174,7 +283,7 @@ function replay(num) {
  * level body and shows only a score readout + optional badge/recap/checklist + actions
  * (Replay, Start Next Level, Level Map) — per the "just show results" flow.
  */
-function showResults(num, score, meta) {
+function showResults(num, score, meta, extraBadges) {
   const body = document.getElementById(`level-${num}-body`);
   const bar = document.getElementById(`level-${num}-next`);
   if (!bar) return;
@@ -185,8 +294,9 @@ function showResults(num, score, meta) {
   const heading = meta.heading || 'Level complete';
   const detail = meta.detail || '';
 
-  const badgeHtml = meta.badge
-    ? `<div class="results-badge-row"><span class="badge-chip badge-pop">${meta.badge.icon} ${meta.badge.name} earned!</span></div>`
+  const allBadges = [...(meta.badge ? [meta.badge] : []), ...(extraBadges || [])];
+  const badgeHtml = allBadges.length
+    ? `<div class="results-badge-row">${allBadges.map(b => `<span class="badge-chip badge-pop">${b.icon} ${b.name} earned!</span>`).join('')}</div>`
     : '';
 
   const recapHtml = (meta.recap && meta.recap.length)
@@ -261,3 +371,9 @@ function showToast(msg) {
 lastKnownScore = progress.totalScore();
 updateTopbar();
 initIntro({ onFinish: () => navTo('map') });
+
+// Ambient background animation + Daily Challenge card both live on the landing screen.
+initBgConstellation(document.getElementById('landing-bg-canvas'));
+if (screens.landing && screens.landing.classList.contains('active')) startBgConstellation();
+const dailySlot = document.getElementById('daily-challenge-slot');
+if (dailySlot) mountDaily(dailySlot);
