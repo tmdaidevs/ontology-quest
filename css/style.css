@@ -131,7 +131,6 @@ body::after {
   font-weight: 700;
   font-size: 1.05rem;
 }
-.brand-icon { font-size: 1.4rem; filter: drop-shadow(0 0 6px rgba(46,230,200,0.5)); }
 .brand-name {
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -155,7 +154,12 @@ body::after {
   font-size: 0.85rem;
   color: var(--text-0);
 }
-.stat-icon { font-size: 0.95rem; }
+.stat-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
 
 /* ---------------- Buttons ---------------- */
 .btn {

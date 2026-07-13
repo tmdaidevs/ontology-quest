@@ -6,12 +6,12 @@ import { openIntro, initIntro } from './intro.js';
 const TOTAL_LEVELS = 5;
 
 const levelMeta = [
-  { num: 1, id: 'level-1', icon: '📜', title: 'The History of Ontologies', desc: 'From Aristotle to GraphRAG — a timeline of ideas.' },
-  { num: 2, id: 'level-2', icon: '🧩', title: 'Core Concepts', desc: 'Classes, triples, taxonomies, and why they matter.' },
-  { num: 3, id: 'level-3', icon: '🛠️', title: 'Tools & Standards', desc: 'RDF, OWL, SPARQL, Neo4j, Wikidata & more.' },
-  { num: 4, id: 'level-4', icon: '🔍', title: 'Multi-Hop Reasoning', desc: 'How graphs are queried, traversed & reasoned over.' },
-  { num: 5, id: 'level-5', icon: '🏗️', title: 'Build Your Own Ontology', desc: 'Design a knowledge graph in a sandbox.' },
-  { num: 6, id: 'level-6', icon: '🌐', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true }
+  { num: 1, id: 'level-1', title: 'The History of Ontologies', desc: 'From Aristotle to GraphRAG — a timeline of ideas.' },
+  { num: 2, id: 'level-2', title: 'Core Concepts', desc: 'Classes, triples, taxonomies, and why they matter.' },
+  { num: 3, id: 'level-3', title: 'Tools & Standards', desc: 'RDF, OWL, SPARQL, Neo4j, Wikidata & more.' },
+  { num: 4, id: 'level-4', title: 'Multi-Hop Reasoning', desc: 'How graphs are queried, traversed & reasoned over.' },
+  { num: 5, id: 'level-5', title: 'Build Your Own Ontology', desc: 'Design a knowledge graph in a sandbox.' },
+  { num: 6, id: 'level-6', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true }
 ];
 
 // Lazily import level modules only when needed to keep initial load light.
@@ -83,12 +83,11 @@ function renderMap() {
     card.className = 'level-card' + (unlocked ? '' : ' locked') + (meta.bonus ? ' bonus-card' : '');
     card.style.animationDelay = `${i * 70}ms`;
     card.innerHTML = `
-      ${meta.bonus ? '<span class="lv-num bonus-tag">✨ Bonus</span>' : `<span class="lv-num">Level ${meta.num}</span>`}
-      <span class="lv-icon">${unlocked ? meta.icon : '🔒'}</span>
+      ${meta.bonus ? '<span class="lv-num bonus-tag">Bonus</span>' : `<span class="lv-num">Level ${meta.num}</span>`}
       <h3>${meta.title}</h3>
       <p>${meta.desc}</p>
       <div class="lv-status">
-        <span>${meta.bonus ? (completed ? '✅ Explored' : 'Explore anytime') : (completed ? '✅ Completed' : (unlocked ? 'Ready to play' : 'Locked'))}</span>
+        <span>${meta.bonus ? (completed ? 'Explored' : 'Explore anytime') : (completed ? 'Completed' : (unlocked ? 'Ready to play' : 'Locked'))}</span>
         ${completed && !meta.bonus ? `<span class="lv-score">${score}%</span>` : ''}
       </div>
     `;
@@ -101,7 +100,7 @@ function renderMap() {
   const badgeShelf = document.getElementById('badge-shelf');
   const badges = progress.getBadges();
   badgeShelf.innerHTML = badges.length
-    ? badges.map((b, i) => `<span class="badge-chip badge-pop" style="animation-delay:${i * 60}ms">${b.icon} ${b.name}</span>`).join('')
+    ? badges.map((b, i) => `<span class="badge-chip badge-pop" style="animation-delay:${i * 60}ms">${b.name}</span>`).join('')
     : '<span style="color:var(--text-2)">No badges yet — complete levels perfectly to earn them!</span>';
 
   updateTopbar();
