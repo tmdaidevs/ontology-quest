@@ -15,10 +15,22 @@ export const toolPairs = [
     explainer: 'RDFS adds lightweight schema vocabulary to RDF — rdfs:Class, rdfs:subClassOf, rdfs:domain/range — enabling simple taxonomies and basic inference.'
   },
   {
+    id: 'jsonld',
+    tool: 'JSON-LD',
+    useCase: 'Embedding linked-data facts directly inside ordinary JSON that web/API developers already use',
+    explainer: 'JSON-LD is the RDF serialization built to feel like plain JSON — add an "@context" mapping familiar keys to real vocabulary terms and any JSON payload becomes valid RDF. That low barrier to entry is exactly why it, not Turtle or RDF/XML, became the dominant serialization in the wild: it is what schema.org markup and most production knowledge-graph APIs actually ship.'
+  },
+  {
     id: 'owl',
     tool: 'OWL (Web Ontology Language)',
     useCase: 'Expressing rich logical constraints and enabling automated reasoning/inference',
     explainer: 'OWL extends RDFS with description-logic features: cardinality, disjointness, equivalence, transitive/symmetric properties — allowing reasoners to infer new facts and detect inconsistencies.'
+  },
+  {
+    id: 'shacl',
+    tool: 'SHACL (Shapes Constraint Language)',
+    useCase: 'Validating that RDF data actually satisfies required shapes before trusting it — a closed-world data-quality gate',
+    explainer: 'SHACL flips OWL\'s assumptions on their head. OWL is open-world (a reasoner infers new facts and never concludes something is false just because it\'s absent); SHACL is closed-world constraint checking — "every Person MUST have exactly one email" — that either passes or fails, like a schema validator. Ontologies often pair the two: OWL for meaning and inference, SHACL for guaranteeing the data feeding it is actually well-formed.'
   },
   {
     id: 'skos',

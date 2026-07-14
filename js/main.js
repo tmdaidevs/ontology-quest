@@ -19,7 +19,8 @@ const levelMeta = [
   { num: 6, id: 'level-6', title: 'Live Knowledge Graph Explorer', desc: 'Query real live data from Wikidata\'s public ontology.', bonus: true },
   { num: 7, id: 'level-7', title: 'Algorithms Visualized', desc: 'Watch BFS, DFS, embedding search & GraphRAG animated step-by-step.', bonus: true },
   { num: 8, id: 'level-8', title: 'Enterprise Case Studies', desc: 'How Google, Amazon, LinkedIn, healthcare, Microsoft & Palantir use knowledge graphs at scale.', bonus: true },
-  { num: 9, id: 'level-9', title: 'Semantic Models vs Ontologies', desc: 'Where taxonomies, BI-style semantic models, and formal ontologies actually differ.', bonus: true }
+  { num: 9, id: 'level-9', title: 'Semantic Models vs Ontologies', desc: 'Where taxonomies, BI-style semantic models, and formal ontologies actually differ.', bonus: true },
+  { num: 10, id: 'level-10', title: 'Best Practices & Anti-Patterns', desc: 'The modeling wisdom that separates a valid ontology from a well-designed one.', bonus: true }
 ];
 
 // Lazily import level modules only when needed to keep initial load light.
@@ -32,14 +33,15 @@ const levelLoaders = {
   6: () => import('./levels/level6-live.js'),
   7: () => import('./levels/level7-algorithms.js'),
   8: () => import('./levels/level8-enterprise.js'),
-  9: () => import('./levels/level9-semantic.js')
+  9: () => import('./levels/level9-semantic.js'),
+  10: () => import('./levels/level10-bestpractices.js')
 };
 
 const screens = {
   landing: document.getElementById('screen-landing'),
   map: document.getElementById('screen-map')
 };
-for (let i = 1; i <= 9; i++) {
+for (let i = 1; i <= 10; i++) {
   screens[`level-${i}`] = document.getElementById(`screen-level-${i}`);
 }
 

@@ -427,6 +427,7 @@ body::after {
 .accordion-item.open .chev { transform: rotate(180deg); color: var(--accent); }
 .chev { transition: transform 0.25s ease; }
 .accordion-item.algo-item.open .accordion-body { max-height: 720px; }
+.accordion-item.bp-item.open .accordion-body { max-height: 1200px; }
 
 /* Triple builder (Level 2) */
 .triple-builder { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
@@ -465,6 +466,8 @@ body::after {
 .tool-explainer .te-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
 .tool-explainer .te-card h4 { margin: 0 0 6px; color: var(--accent); font-size: 0.95rem; }
 .tool-explainer .te-card p { margin: 0; color: var(--text-1); font-size: 0.88rem; }
+.tool-explainer .te-card.te-card-warn { border-left: 3px solid var(--danger); }
+.tool-explainer .te-card.te-card-warn h4 { color: var(--danger); }
 
 /* Graph visualizations (Level 4 & 5) */
 .graph-wrap {
@@ -517,9 +520,11 @@ svg.graph-svg { display: block; width: 100%; height: auto; }
 .sandbox-toolbar select, .sandbox-toolbar input[type=text] {
   background: var(--bg-2); border: 1px solid var(--border); color: var(--text-0); border-radius: var(--radius-sm); padding: 8px 10px;
 }
+.toolbar-sep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 2px; }
 .sandbox-canvas-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #060a0f; }
 svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: none; }
 .sandbox-hint { color: var(--text-2); font-size: 0.85rem; margin-top: 8px; font-family: var(--font-mono); }
+.sandbox-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
 .checklist { margin-top: 16px; list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .checklist li { display: flex; align-items: center; gap: 10px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.92rem; }
 .checklist li.pass { border-color: var(--success); }
@@ -1275,6 +1280,35 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
 }
 .cert-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
+/* Ontology export modal (Level 5 — Turtle / JSON-LD) */
+.export-modal-overlay {
+  position: fixed; inset: 0; z-index: 250;
+  background: rgba(4,6,9,0.86); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  animation: fadeIn 0.25s ease; overflow-y: auto;
+}
+.export-modal {
+  position: relative;
+  width: min(760px, 100%);
+  background: var(--bg-1); border: 1px solid var(--border-bright); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 28px 30px; max-height: 92vh; overflow-y: auto;
+}
+.export-modal h3 { margin: 0 0 8px; font-family: var(--font-mono); font-size: 1.2rem; }
+.export-modal-close {
+  position: absolute; top: 18px; right: 18px;
+  background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-1); width: 32px; height: 32px; cursor: pointer; font-size: 0.9rem;
+}
+.export-modal-close:hover { border-color: var(--danger); color: var(--danger); }
+.export-modal-sub { color: var(--text-1); margin: 0 0 16px; font-size: 0.92rem; }
+.export-code {
+  width: 100%; max-height: 46vh; overflow: auto; background: var(--bg-0); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px 18px; margin: 0 0 18px;
+  font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5; color: var(--accent);
+  white-space: pre; tab-size: 2;
+}
+.export-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
 @media (max-width: 640px) {
   .rail-node { width: 30px; height: 30px; font-size: 0.75rem; }
   .rail-seg { width: 16px; }
@@ -1282,5 +1316,6 @@ svg.sandbox-svg { width: 100%; height: 480px; cursor: crosshair; touch-action: n
   .achievements-row { flex-direction: column; }
   .achievements-row .btn { width: 100%; }
   .cert-modal { padding: 22px 18px; }
+  .export-modal { padding: 22px 18px; }
   .challenge-hud { gap: 10px; }
 }

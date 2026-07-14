@@ -1,9 +1,18 @@
 // level5-sandbox.js — Build-your-own ontology sandbox: node-link editor + validation checklist.
 import { scenarios } from '../data/scenarios.js';
 import { saveSandbox, loadSandbox } from '../progress.js';
+import { toTurtle, toJsonLd, slugify, downloadTextFile } from '../ontology-export.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const HIERARCHY_LABELS = ['isa', 'subclassof', 'kindof', 'typeof'];
+const MAX_HISTORY = 60;
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 export function mount(container, api) {
   let currentScenario = null;
@@ -12,9 +21,14 @@ export function mount(container, api) {
   let mode = 'move'; // 'move' | 'add-class' | 'add-instance' | 'connect'
   let connectFrom = null;
   let dragNode = null;
+  let dragMoved = false;
   let dragOffset = { x: 0, y: 0 };
   let idCounter = 1;
   let validatedOnce = false;
+
+  // --- Undo/redo history: a stack of deep-cloned {nodes, edges} snapshots. ---
+  let history = [];
+  let historyIndex = -1;
 
   container.innerHTML = `
     <div class="card">
@@ -30,14 +44,19 @@ export function mount(container, api) {
         <button class="btn btn-secondary mode-btn" data-mode="add-instance">Add Instance</button>
         <button class="btn btn-secondary mode-btn" data-mode="connect">Connect</button>
         <button class="btn btn-ghost" id="btn-delete-selected">Delete Selected</button>
+        <span class="toolbar-sep"></span>
+        <button class="btn btn-ghost" id="btn-undo" title="Undo (last edit)" disabled>↶ Undo</button>
+        <button class="btn btn-ghost" id="btn-redo" title="Redo" disabled>↷ Redo</button>
         <button class="btn btn-ghost" id="btn-clear">↺ Clear All</button>
       </div>
       <div class="sandbox-canvas-wrap">
         <svg class="sandbox-svg" id="sandbox-svg"></svg>
       </div>
       <p class="sandbox-hint" id="sandbox-hint">Mode: Move — click and drag nodes to reposition them.</p>
-      <div style="margin-top:14px;">
+      <div class="sandbox-actions">
         <button class="btn btn-primary" id="btn-validate-ontology">Validate My Ontology</button>
+        <button class="btn btn-secondary" id="btn-export-turtle">Export as Turtle (.ttl)</button>
+        <button class="btn btn-secondary" id="btn-export-jsonld">Export as JSON-LD (.json)</button>
       </div>
     </div>
   `;
@@ -59,6 +78,50 @@ export function mount(container, api) {
   const editorCard = container.querySelector('#editor-card');
   const svg = container.querySelector('#sandbox-svg');
   const hintEl = container.querySelector('#sandbox-hint');
+  const undoBtn = container.querySelector('#btn-undo');
+  const redoBtn = container.querySelector('#btn-redo');
+
+  // --- Undo/redo helpers ---
+  function snapshot() {
+    return { nodes: nodes.map(n => ({ ...n })), edges: edges.map(e => ({ ...e })) };
+  }
+  function updateUndoRedoButtons() {
+    undoBtn.disabled = historyIndex <= 0;
+    redoBtn.disabled = historyIndex >= history.length - 1;
+  }
+  function resetHistory() {
+    history = [snapshot()];
+    historyIndex = 0;
+    updateUndoRedoButtons();
+  }
+  /** Call after any completed mutation (add/delete/connect/rename/move) to record a checkpoint. */
+  function commitHistory() {
+    history = history.slice(0, historyIndex + 1);
+    history.push(snapshot());
+    if (history.length > MAX_HISTORY) history.shift();
+    historyIndex = history.length - 1;
+    updateUndoRedoButtons();
+  }
+  function restoreSnapshot(snap) {
+    nodes = snap.nodes.map(n => ({ ...n }));
+    edges = snap.edges.map(e => ({ ...e }));
+    selectedNodeId = null;
+    connectFrom = null;
+    render();
+    updateUndoRedoButtons();
+  }
+  function undo() {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    restoreSnapshot(history[historyIndex]);
+  }
+  function redo() {
+    if (historyIndex >= history.length - 1) return;
+    historyIndex++;
+    restoreSnapshot(history[historyIndex]);
+  }
+  undoBtn.addEventListener('click', undo);
+  redoBtn.addEventListener('click', redo);
 
   function loadScenario(s) {
     currentScenario = s;
@@ -69,6 +132,7 @@ export function mount(container, api) {
     idCounter = nodes.length + 1;
     editorCard.hidden = false;
     render();
+    resetHistory();
     editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -92,9 +156,11 @@ export function mount(container, api) {
   container.querySelector('[data-mode="move"]').classList.add('btn-primary');
 
   container.querySelector('#btn-clear').addEventListener('click', () => {
+    if (!nodes.length && !edges.length) return;
     nodes = [];
     edges = [];
     render();
+    commitHistory();
   });
 
   let selectedNodeId = null;
@@ -104,6 +170,7 @@ export function mount(container, api) {
     edges = edges.filter(e => e.from !== selectedNodeId && e.to !== selectedNodeId);
     selectedNodeId = null;
     render();
+    commitHistory();
   });
 
   // --- SVG interaction ---
@@ -128,6 +195,7 @@ export function mount(container, api) {
         x: pt.x, y: pt.y
       });
       render();
+      commitHistory();
     }
   });
 
@@ -190,6 +258,7 @@ export function mount(container, api) {
         if (mode === 'move') {
           selectedNodeId = node.id;
           dragNode = node;
+          dragMoved = false;
           const pt = svgPoint(evt);
           dragOffset = { x: pt.x - node.x, y: pt.y - node.y };
           render();
@@ -205,9 +274,13 @@ export function mount(container, api) {
             const label = prompt('Name this relationship (e.g. isA, hasPart, worksAt):', 'relatesTo');
             if (label && label.trim()) {
               edges.push({ from: connectFrom, to: node.id, label: label.trim() });
+              connectFrom = null;
+              render();
+              commitHistory();
+            } else {
+              connectFrom = null;
+              render();
             }
-            connectFrom = null;
-            render();
           }
         } else if (mode === 'move') {
           selectedNodeId = node.id;
@@ -220,9 +293,10 @@ export function mount(container, api) {
       g.addEventListener('dblclick', (evt) => {
         evt.stopPropagation();
         const newLabel = prompt('Rename node:', node.label);
-        if (newLabel && newLabel.trim()) {
+        if (newLabel && newLabel.trim() && newLabel.trim() !== node.label) {
           node.label = newLabel.trim();
           render();
+          commitHistory();
         }
       });
     });
@@ -232,13 +306,18 @@ export function mount(container, api) {
 
   svg.addEventListener('mousemove', (evt) => {
     if (dragNode) {
+      dragMoved = true;
       const pt = svgPoint(evt);
       dragNode.x = pt.x - dragOffset.x;
       dragNode.y = pt.y - dragOffset.y;
       render();
     }
   });
-  window.addEventListener('mouseup', () => { dragNode = null; });
+  window.addEventListener('mouseup', () => {
+    if (dragNode && dragMoved) commitHistory();
+    dragNode = null;
+    dragMoved = false;
+  });
 
   // --- Validation ---
   container.querySelector('#btn-validate-ontology').addEventListener('click', () => {
@@ -278,4 +357,67 @@ export function mount(container, api) {
       checklist: checks
     });
   });
+
+  // --- Export as Turtle / JSON-LD ---
+  function requireGraphOrAlert() {
+    if (!currentScenario) {
+      alert('Pick a scenario first to build an ontology you can export.');
+      return false;
+    }
+    if (!nodes.length) {
+      alert('Add at least one class or instance before exporting.');
+      return false;
+    }
+    return true;
+  }
+
+  container.querySelector('#btn-export-turtle').addEventListener('click', () => {
+    if (!requireGraphOrAlert()) return;
+    const code = toTurtle(nodes, edges, currentScenario.name);
+    openExportModal('Turtle (.ttl)', code, `${slugify(currentScenario.name)}.ttl`, 'text/turtle');
+  });
+  container.querySelector('#btn-export-jsonld').addEventListener('click', () => {
+    if (!requireGraphOrAlert()) return;
+    const code = toJsonLd(nodes, edges, currentScenario.name);
+    openExportModal('JSON-LD (.json)', code, `${slugify(currentScenario.name)}.json`, 'application/ld+json');
+  });
+
+  function openExportModal(formatLabel, code, filename, mimeType) {
+    document.getElementById('export-modal-overlay')?.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'export-modal-overlay';
+    overlay.className = 'export-modal-overlay';
+    overlay.innerHTML = `
+      <div class="export-modal">
+        <button class="export-modal-close" id="export-modal-close" aria-label="Close">&times;</button>
+        <h3>Exported as ${escapeHtml(formatLabel)}</h3>
+        <p class="export-modal-sub">Generated from your current sandbox graph — real, valid syntax you can paste into any RDF tool.</p>
+        <pre class="export-code"><code>${escapeHtml(code)}</code></pre>
+        <div class="export-modal-actions">
+          <button class="btn btn-secondary" id="export-copy-btn">Copy to Clipboard</button>
+          <button class="btn btn-primary" id="export-download-btn">Download File</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.querySelector('#export-modal-close').addEventListener('click', close);
+    overlay.addEventListener('click', (evt) => { if (evt.target === overlay) close(); });
+
+    overlay.querySelector('#export-copy-btn').addEventListener('click', async (evt) => {
+      const btn = evt.currentTarget;
+      try {
+        await navigator.clipboard.writeText(code);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      } catch (err) {
+        alert('Could not copy automatically — please select the text manually.');
+      }
+    });
+    overlay.querySelector('#export-download-btn').addEventListener('click', () => {
+      downloadTextFile(filename, code, mimeType);
+    });
+  }
 }
